@@ -1,0 +1,425 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.F_Maint..Create(BaseForm)
+Gui.F_Maint..Caption("Custom Cycle Count Maintenance")
+Gui.F_Maint..Size(769,425)
+Gui.F_Maint..MinX(0)
+Gui.F_Maint..MinY(0)
+Gui.F_Maint..Position(0,0)
+Gui.F_Maint..AlwaysOnTop(False)
+Gui.F_Maint..FontName("Tahoma")
+Gui.F_Maint..FontSize(8.25)
+Gui.F_Maint..ControlBox(True)
+Gui.F_Maint..MaxButton(True)
+Gui.F_Maint..MinButton(True)
+Gui.F_Maint..MousePointer(0)
+Gui.F_Maint..Moveable(True)
+Gui.F_Maint..Sizeable(True)
+Gui.F_Maint..ShowInTaskBar(True)
+Gui.F_Maint..TitleBar(True)
+Gui.F_Maint..Event(UnLoad,F_Maint_UnLoad)
+Gui.F_Maint.frameAdd.Create(Frame)
+Gui.F_Maint.frameAdd.Enabled(True)
+Gui.F_Maint.frameAdd.Visible(True)
+Gui.F_Maint.frameAdd.Zorder(0)
+Gui.F_Maint.frameAdd.Size(329,48)
+Gui.F_Maint.frameAdd.Position(3,3)
+Gui.F_Maint.frameAdd.Caption("")
+Gui.F_Maint.frameAdd.FontName("Tahoma")
+Gui.F_Maint.frameAdd.FontSize(8.25)
+Gui.F_Maint.ddlBin.Create(DropDownList)
+Gui.F_Maint.ddlBin.Enabled(True)
+Gui.F_Maint.ddlBin.Visible(True)
+Gui.F_Maint.ddlBin.Zorder(0)
+Gui.F_Maint.ddlBin.Size(100,20)
+Gui.F_Maint.ddlBin.Position(7,21)
+Gui.F_Maint.ddlBin.FontName("Tahoma")
+Gui.F_Maint.ddlBin.FontSize(8.25)
+Gui.F_Maint.ddlBin.Parent("frameAdd")
+Gui.F_Maint.ddlLoc.Create(DropDownList)
+Gui.F_Maint.ddlLoc.Enabled(True)
+Gui.F_Maint.ddlLoc.Visible(True)
+Gui.F_Maint.ddlLoc.Zorder(0)
+Gui.F_Maint.ddlLoc.Size(62,20)
+Gui.F_Maint.ddlLoc.Position(118,21)
+Gui.F_Maint.ddlLoc.FontName("Tahoma")
+Gui.F_Maint.ddlLoc.FontSize(8.25)
+Gui.F_Maint.ddlLoc.Parent("frameAdd")
+Gui.F_Maint.lblBin.Create(Label,"Bin",True,14,13,0,13,5,True,0,"Tahoma",8.25,,0,0)
+Gui.F_Maint.lblBin.BorderStyle(0)
+Gui.F_Maint.lblBin.Parent("frameAdd")
+Gui.F_Maint.lblLoc.Create(Label,"Location",True,40,13,0,124,5,True,0,"Tahoma",8.25,,0,0)
+Gui.F_Maint.lblLoc.BorderStyle(0)
+Gui.F_Maint.lblLoc.Parent("frameAdd")
+Gui.F_Maint.cmdAdd.Create(Button)
+Gui.F_Maint.cmdAdd.Enabled(True)
+Gui.F_Maint.cmdAdd.Visible(True)
+Gui.F_Maint.cmdAdd.Zorder(0)
+Gui.F_Maint.cmdAdd.Size(59,23)
+Gui.F_Maint.cmdAdd.Position(193,14)
+Gui.F_Maint.cmdAdd.Caption("Add")
+Gui.F_Maint.cmdAdd.FontName("Tahoma")
+Gui.F_Maint.cmdAdd.FontSize(8.25)
+Gui.F_Maint.cmdAdd.Parent("frameAdd")
+Gui.F_Maint.cmdAdd.Event(Click,cmdAdd_Click)
+Gui.F_Maint.cmdAutoFill.Create(Button)
+Gui.F_Maint.cmdAutoFill.Enabled(True)
+Gui.F_Maint.cmdAutoFill.Visible(True)
+Gui.F_Maint.cmdAutoFill.Zorder(0)
+Gui.F_Maint.cmdAutoFill.Size(59,23)
+Gui.F_Maint.cmdAutoFill.Position(263,14)
+Gui.F_Maint.cmdAutoFill.Caption("Auto Fill")
+Gui.F_Maint.cmdAutoFill.FontName("Tahoma")
+Gui.F_Maint.cmdAutoFill.FontSize(8.25)
+Gui.F_Maint.cmdAutoFill.Parent("frameAdd")
+Gui.F_Maint.cmdAutoFill.Event(Click,cmdAutoFill_Click)
+Gui.F_Maint.gsgcMaint.Create(GsGridControl)
+Gui.F_Maint.gsgcMaint.Enabled(True)
+Gui.F_Maint.gsgcMaint.Visible(True)
+Gui.F_Maint.gsgcMaint.Zorder(0)
+Gui.F_Maint.gsgcMaint.Size(769,303)
+Gui.F_Maint.gsgcMaint.Position(0,56)
+Gui.F_Maint.gsgcMaint.Anchor(15)
+Gui.F_Maint.gsgcMaint.Event(CellValueChanged,gsgcMaint_CellValueChanged)
+Gui.F_Maint.cmdSave.Create(Button)
+Gui.F_Maint.cmdSave.Enabled(True)
+Gui.F_Maint.cmdSave.Visible(True)
+Gui.F_Maint.cmdSave.Zorder(0)
+Gui.F_Maint.cmdSave.Size(59,23)
+Gui.F_Maint.cmdSave.Position(8,366)
+Gui.F_Maint.cmdSave.Caption("Save")
+Gui.F_Maint.cmdSave.FontName("Tahoma")
+Gui.F_Maint.cmdSave.FontSize(8.25)
+Gui.F_Maint.cmdSave.Event(Click,cmdSave_Click)
+Gui.F_Maint.cmdSave.Anchor(6)
+Gui.F_Maint.cmdRemove.Create(Button)
+Gui.F_Maint.cmdRemove.Enabled(True)
+Gui.F_Maint.cmdRemove.Visible(True)
+Gui.F_Maint.cmdRemove.Zorder(0)
+Gui.F_Maint.cmdRemove.Size(133,23)
+Gui.F_Maint.cmdRemove.Position(627,366)
+Gui.F_Maint.cmdRemove.Anchor(10)
+Gui.F_Maint.cmdRemove.Caption("Remove Deleted Bins")
+Gui.F_Maint.cmdRemove.FontName("Tahoma")
+Gui.F_Maint.cmdRemove.FontSize(8.25)
+Gui.F_Maint.cmdRemove.Event(Click,cmdRemove_Click)
+Gui.F_Maint.lblSaved.Create(Label,"Saved!",False,34,13,0,78,371,True,0,"Tahoma",8.25,,0,0)
+Gui.F_Maint.lblSaved.BorderStyle(0)
+Gui.F_Maint.lblSaved.Anchor(6)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.External.Include.Library("GCG_6238_ErrorHandling.lib")
+V.Global.bMAINTcon.Declare
+V.Global.bdictBins.Declare
+V.Global.bdictLocs.Declare
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Author: BixRB
+'Date: 23 Dec 2020
+'Mum Industries
+'GCG_6238_CustomCycleCount.g2u
+'Maintenance program for the Custom Cycle Count program. From here, users can add Bin/Locs to the main program's list for cycle counting on Custom Mobile Transactions.
+F.Intrinsic.Control.Try
+Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
+
+'Fill DDLs
+Gui.F_Maint.ddlBin.AddItem("")
+Gui.F_Maint.ddlLoc.AddItem("")
+
+F.ODBC.Connection!MAINTcon.OpenCompanyConnection
+V.Global.bMAINTcon.Set(True)
+F.Data.Dictionary.CreateFromSQL("dictBins","MAINTcon","select distinct BIN, BIN from V_BIN_MASTER order by BIN;")
+V.Global.bdictBins.Set(True)
+F.Data.Dictionary.CreateFromSQL("dictLocs","MAINTcon","select distinct LOCATION, LOCATION from V_LOCATIONS order by LOCATION;")
+V.Global.bdictLocs.Set(True)
+F.Data.DataTable.CreateFromSQL("dtMaint","MAINTcon","select BIN, LOCATION, COUNT_FLAG, DATE_LAST_COUNT, RUN_ID, USER_ID from GCG_6238_MAINT where BIN <> '' order by BIN, LOCATION;",True)
+V.Global.bMAINTcon.Set(False)
+F.ODBC.Connection!MAINTcon.Close
+
+F.Data.DataView.Create("dtMaint","dvCheck")
+
+Gui.F_Maint.ddlBin.AddItems("Dictionary","dictBins")
+Gui.F_Maint.ddlLoc.AddItems("Dictionary","dictLocs")
+
+F.Intrinsic.Control.CallSub(SetupGridView)
+
+Gui.F_Maint..Show
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine)
+	F.Intrinsic.Control.CallSub(F_Maint_UnLoad)
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.F_Maint_UnLoad.Start
+F.Intrinsic.Control.If(V.Global.bdictBins)
+	F.Data.Dictionary.Close("dictBins")
+F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.If(V.Global.bdictLocs)
+	F.Data.Dictionary.Close("dictLocs")
+F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.If(V.DataTable.dtMaint.Exists)
+	F.Data.DataTable.Close("dtMaint")
+F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.If(V.Global.bMAINTcon)
+	F.ODBC.Connection!MAINTcon.Close
+F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.End
+Program.Sub.F_Maint_UnLoad.End
+
+Program.Sub.SetupGridView.Start
+F.Intrinsic.Control.Try
+
+Gui.F_Maint.gsgcMaint.AddGridviewFromDatatable("gvMaint","dtMaint")
+
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","BIN","AllowEdit",False)
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","LOCATION","AllowEdit",False)
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","COUNT_FLAG","ReadOnly",False)
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","DATE_LAST_COUNT","AllowEdit",False)
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","RUN_ID","AllowEdit",False)
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","USER_ID","AllowEdit",False)
+
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","BIN","Caption","Bin")
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","LOCATION","Caption","Loc")
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","COUNT_FLAG","Caption","Count Flag")
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","DATE_LAST_COUNT","Caption","Last Count Date")
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","RUN_ID","Caption","Run ID")
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","USER_ID","Caption","User ID")
+
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","BIN","HeaderHAlignment","Center")
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","LOCATION","HeaderHAlignment","Center")
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","COUNT_FLAG","HeaderHAlignment","Center")
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","DATE_LAST_COUNT","HeaderHAlignment","Center")
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","RUN_ID","HeaderHAlignment","Center")
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","USER_ID","HeaderHAlignment","Center")
+
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","BIN","CellHAlignment","Center")
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","LOCATION","CellHAlignment","Center")
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","COUNT_FLAG","CellHAlignment","Center")
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","DATE_LAST_COUNT","CellHAlignment","Center")
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","RUN_ID","CellHAlignment","Center")
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","USER_ID","CellHAlignment","Center")
+
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","BIN","HeaderFontBold",True)
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","LOCATION","HeaderFontBold",True)
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","COUNT_FLAG","HeaderFontBold",True)
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","DATE_LAST_COUNT","HeaderFontBold",True)
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","RUN_ID","HeaderFontBold",True)
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","USER_ID","HeaderFontBold",True)
+
+
+Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","COUNT_FLAG","CellBackColor",V.Enum.ThemeColors!ColorYellow.Highlight)
+
+'Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","START_TIME","EditMaskType","RegEx")
+'Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","START_TIME","EditMask","[012][0123456789]:[012345][01234567890]")
+'Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","STOP_TIME","EditMaskType","RegEx")
+'Gui.F_Maint.gsgcMaint.SetColumnProperty("gvMaint","STOP_TIME","EditMask","[012][0123456789]:[012345][01234567890]")
+
+Gui.F_Maint.gsgcMaint.ColumnEdit("gvMaint","COUNT_FLAG","DropDownList","Y*!*N")
+
+Gui.F_Maint.gsgcMaint.MainView("gvMaint")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine)
+	F.Intrinsic.Control.CallSub(F_Maint_UnLoad)
+F.Intrinsic.Control.EndTry
+Program.Sub.SetupGridView.End
+
+Program.Sub.cmdAdd_Click.Start
+V.Local.sSQL.Declare
+F.Intrinsic.Control.Try
+
+'Use Bin and Loc info to check if the combination exists and add it if it doesn't
+F.Intrinsic.Control.If(V.Screen.F_Maint!ddlBin.Text,=,"")
+	Gui.F_Maint.ddlBin.SetFocus
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+Gui.F_Maint.lblSaved.Visible(False)
+
+F.Intrinsic.String.Build("[BIN] = '{0}' and [LOCATION] = '{1}'",V.Screen.F_Maint!ddlBin.Text,V.Screen.F_Maint!ddlLoc.Text,V.Local.sSQL)
+F.Data.DataView.SetFilter("dtMaint","dvCheck",V.Local.sSQL)
+F.Intrinsic.Control.If(V.DataView.dtMaint!dvCheck.RowCount,>,0)
+	F.Intrinsic.UI.Msgbox("Bin and Location combination already exist in maintenance.","CANCELLING ADD")
+	F.Data.DataView.SetFilter("dtMaint","dvCheck","")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+F.Data.DataView.SetFilter("dtMaint","dvCheck","")
+
+F.Intrinsic.String.Build("select 1 from V_BIN_MASTER where BIN = '{0}' and LOCATION = '{1}';",V.Screen.F_Maint!ddlBin.Text,V.Screen.F_Maint!ddlLoc.Text,V.Local.sSQL)
+F.ODBC.Connection!MAINTcon.OpenCompanyConnection
+V.Global.bMAINTcon.Set(True)
+F.ODBC.Connection!MAINTcon.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+V.Global.bMAINTcon.Set(False)
+F.ODBC.Connection!MAINTcon.Close
+F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF)
+	F.Intrinsic.UI.Msgbox("Bin and Location combination cannot be found in Bin Masters.","CANCELLING ADD")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.AddRow("dtMaint","BIN",V.Screen.F_Maint!ddlBin.Text,"LOCATION",V.Screen.F_Maint!ddlLoc.Text,"COUNT_FLAG","Y","START_TIME","00:00","STOP_TIME","00:00","RUN_ID","","USER_ID","")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine)
+	F.Intrinsic.Control.CallSub(F_Maint_UnLoad)
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdAdd_Click.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.Try
+
+Gui.F_Maint.lblSaved.Visible(False)
+
+F.ODBC.Connection!MAINTcon.OpenCompanyConnection
+V.Global.bMAINTcon.Set(True)
+F.Data.DataTable.SaveToDB("dtMaint","MAINTcon","GCG_6238_MAINT","BIN*!*LOCATION",256)
+V.Global.bMAINTcon.Set(False)
+F.ODBC.Connection!MAINTcon.Close
+
+F.Data.DataTable.AcceptChanges("dtMaint")
+
+Gui.F_Maint.lblSaved.Visible(True)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine)
+	F.Intrinsic.Control.CallSub(F_Maint_UnLoad)
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.cmdAutoFill_Click.Start
+V.Local.iRet.Declare
+V.Local.sSQL.Declare
+F.Intrinsic.Control.Try
+
+F.Intrinsic.Control.BlockEvents
+F.Intrinsic.UI.Msgbox("This function will add all existing combinations of Bin and Location from the Bin Masters to the table. Would you like to continue?","AUTO FILL",V.Enum.MsgBoxStyle!YesNo,V.Local.iRet)
+F.Intrinsic.Control.If(V.Local.iRet,=,V.Enum.MsgBoxResult!No)
+	F.Intrinsic.Control.UnBlockEvents
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+Gui.F_Maint.lblSaved.Visible(False)
+
+F.Data.DataView.ToString("dtMaint","dvCheck","BIN*!*LOCATION","*!*","', '",V.Local.sSQL)
+F.Intrinsic.String.Replace(V.Local.sSQL,"*!*","",V.Local.sSQL)
+
+F.Intrinsic.String.Build("select BIN, LOCATION, 'Y' as COUNT_FLAG, '00:00' as START_TIME, '00:00' as STOP_TIME, '' as RUN_ID, '' as USER_ID from V_BIN_MASTER where BIN + LOCATION not in ('{0}') order by BIN, LOCATION;",V.Local.sSQL,V.Local.sSQL)
+F.ODBC.Connection!MAINTcon.OpenCompanyConnection
+V.Global.bMAINTcon.Set(True)
+F.Data.DataTable.CreateFromSQL("dtTemp","MAINTcon",V.Local.sSQL)
+V.Global.bMAINTcon.Set(False)
+F.ODBC.Connection!MAINTcon.Close
+
+F.Data.DataTable.Merge("dtTemp","dtMaint",False,2)
+F.Data.DataTable.Close("dtTemp")
+F.Intrinsic.Control.UnBlockEvents
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine)
+	F.Intrinsic.Control.CallSub(F_Maint_UnLoad)
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdAutoFill_Click.End
+
+Program.Sub.gsgcMaint_CellValueChanged.Start
+V.Local.sNotCol.Declare
+V.Local.iHH.Declare
+V.Local.iMM.Declare
+V.Local.iHH2.Declare
+V.Local.iMM2.Declare
+F.Intrinsic.Control.Try
+
+Gui.F_Maint.lblSaved.Visible(False)
+
+F.Intrinsic.Control.SelectCase(V.Args.Column.UCase)
+	F.Intrinsic.Control.CaseAny("START_TIME","STOP_TIME")
+		F.Intrinsic.Control.If(V.Args.Column.UCase,=,"START_TIME")
+			V.Local.sNotCol.Set("STOP_TIME")
+		F.Intrinsic.Control.Else
+			V.Local.sNotCol.Set("START_TIME")
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.If(V.Args.Value,=,"")
+			F.Data.DataTable.SetValue("dtMaint",V.Args.RowIndex,V.Args.Column,V.DataTable.dtMaint(V.Args.RowIndex).[V.Local.sNotCol]!FieldVal)
+		F.Intrinsic.Control.EndIf
+		V.Local.iHH.Set(V.Args.Value.Left2)
+		V.Local.iMM.Set(V.Args.Value.Right2)
+		F.Intrinsic.Control.If(V.Local.iHH,>,23)
+			F.Data.DataTable.SetValue("dtMaint",V.Args.RowIndex,V.Args.Column,"00:00")
+		F.Intrinsic.Control.EndIf
+		V.Local.iHH.Set(V.DataTable.dtMaint(V.Args.RowIndex).START_TIME!FieldVal.Left2)
+		V.Local.iMM.Set(V.DataTable.dtMaint(V.Args.RowIndex).START_TIME!FieldVal.Right2)
+		V.Local.iHH2.Set(V.DataTable.dtMaint(V.Args.RowIndex).STOP_TIME!FieldVal.Left2)
+		V.Local.iMM2.Set(V.DataTable.dtMaint(V.Args.RowIndex).STOP_TIME!FieldVal.Right2)
+		F.Intrinsic.Control.If(V.Local.iHH,>,V.Local.iHH2)
+			F.Data.DataTable.SetValue("dtMaint",V.Args.RowIndex,V.Args.Column,V.DataTable.dtMaint(V.Args.RowIndex).[V.Local.sNotCol]!FieldVal)
+		F.Intrinsic.Control.ElseIf(V.Local.iHH,=,V.Local.iHH2)
+			F.Intrinsic.Control.If(V.Local.iMM,>,V.Local.iMM2)
+				F.Data.DataTable.SetValue("dtMaint",V.Args.RowIndex,V.Args.Column,V.DataTable.dtMaint(V.Args.RowIndex).[V.Local.sNotCol]!FieldVal)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine)
+	F.Intrinsic.Control.CallSub(F_Maint_UnLoad)
+F.Intrinsic.Control.EndTry
+Program.Sub.gsgcMaint_CellValueChanged.End
+
+Program.Sub.cmdRemove_Click.Start
+V.Local.iCnt.Declare
+F.Intrinsic.Control.Try
+
+Gui.F_Maint..Visible(False)
+
+F.ODBC.Connection!MAINTcon.OpenCompanyConnection
+V.Global.bMAINTcon.Set(True)
+F.Data.Dictionary.CreateFromSQL("dictBinCheck","MAINTcon","select BIN + LOCATION, cast(0 as Bit) from V_BIN_MASTER;")
+V.Global.bMAINTcon.Set(False)
+F.ODBC.Connection!MAINTcon.Close
+
+F.Data.DataTable.AddExpressionColumn("dtMaint","BINLOC","String","[BIN] + [LOCATION]")
+F.Data.DataTable.AddColumn("dtMaint","DELETED","Boolean")
+F.Data.Dictionary.SetDefaultReturn("dictBinCheck",True)
+F.Data.DataTable.FillFromDictionary("dtMaint","dictBinCheck","BINLOC","DELETED")
+
+F.Data.Dictionary.Close("dictBinCheck")
+
+F.Data.DataView.Create("dtMaint","dvDeleted")
+F.Data.DataView.SetFilter("dtMaint","dvDeleted","[DELETED]")
+
+F.Data.DataTable.RemoveColumn("dtMaint","BINLOC")
+
+F.Intrinsic.Control.If(V.DataView.dtMaint!dvDeleted.RowCount,>,0)
+	F.Intrinsic.Control.For(V.Local.iCnt,V.DataView.dtMaint!dvDeleted.RowCount--,0,-1)
+		F.Data.DataTable.DeleteRow("dtMaint",V.DataView.dtMaint!dvDeleted(V.Local.iCnt).DataTableIndex)
+	F.Intrinsic.Control.Next(V.Local.iCnt)
+	
+	F.Data.DataView.Close("dtMaint","dvDeleted")
+	F.Data.DataTable.RemoveColumn("dtMaint","DELETED")
+	
+	F.ODBC.Connection!MAINTcon.OpenCompanyConnection
+	V.Global.bMAINTcon.Set(True)
+	F.Data.DataTable.SaveToDB("dtMaint","MAINTcon","GCG_6238_MAINT","BIN*!*LOCATION",4)
+	V.Global.bMAINTcon.Set(False)
+	F.ODBC.Connection!MAINTcon.Close
+	
+	F.Data.DataTable.AcceptChanges("dtMaint")
+	
+	Gui.F_Maint.lblSaved.Visible(True)
+F.Intrinsic.Control.Else
+	F.Intrinsic.UI.Msgbox("No Bins to remove","Cancelling Remove")
+	F.Data.DataView.Close("dtMaint","dvDeleted")
+	F.Data.DataTable.RemoveColumn("dtMaint","DELETED")
+F.Intrinsic.Control.EndIf
+
+Gui.F_Maint..Visible(True)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMessage,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine)
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdRemove_Click.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$bbaker$}$20210303134330246$}$pM7xsHplA2E9VCTenDTJ47gi1rF/t66Ws2EA2XX56/mrY4rk6WxPtI3MAQ7zP/P3mEVdA0ROM6A=
+Program.Sub.Comments.End
