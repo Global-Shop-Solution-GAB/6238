@@ -1,0 +1,96 @@
+﻿Program.Sub.Preflight.Start
+Program.External.Include.Library("GCG_6238_ErrorHandling.lib")
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Author: BixRB
+'Date: 15 Jan 2021
+'Mum Industries
+'GS Mobile transaction 1 for custom cycle count process - select least recently counted bins
+V.Local.sMsg.Declare
+F.Intrinsic.Control.Try
+
+F.Intrinsic.Control.CallSub(GetPassedValues,"TransID",V.Passed.DATA-TRANSID)
+
+F.Intrinsic.Control.If(V.DataTable.dtLocation.RowCount,=,0)
+	F.Global.Mobile.SetCustomResult(V.Caller.CompanyCode,V.Passed.DATA-TRANSID,"Err: No information passed.")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.CallSub(GetBinList)
+
+F.Intrinsic.Control.If(V.DataTable.dtBinInfo.RowCount,=,0)
+	F.Intrinsic.String.Build("No bin information could be found in maintenance table for Location selected.{0}{0}Location passed:",V.Ambient.NewLine,V.Local.sMsg)
+	F.Intrinsic.Control.If(V.DataTable.dtLocation(0).LOCATION!FieldVal,=,"")
+		F.Intrinsic.String.Build("{0}(Blank)",V.Local.sMsg,V.Local.sMsg)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.Build("{0}{1}",V.DataTable.dtLocation(0).LOCATION!FieldVal,V.Local.sMsg)
+	F.Intrinsic.Control.EndIf
+	F.Global.Mobile.SetCustomResult(V.Caller.CompanyCode,V.Passed.DATA-TRANSID,V.Local.sMsg)
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.CallSub(DisplayBinList)
+
+F.Data.DataTable.Close("dtBinInfo")
+F.Global.Mobile.SetCustomResult(V.Caller.CompanyCode,V.Passed.DATA-TRANSID,V.Args.Return)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.GetBinList.Start
+V.Local.sSQL.Declare
+F.Intrinsic.Control.Try
+
+F.Intrinsic.String.Build("select top 1 rtrim(BIN) as BIN, rtrim(LOCATION) as LOCATION, COUNT_FLAG, DATE_LAST_COUNT, RUN_ID, USER_ID from GCG_6238_MAINT where RUN_ID = '' and COUNT_FLAG = 'Y' and LOCATION = '{0}' order by DATE_LAST_COUNT asc, BIN asc, LOCATION asc;",V.DataTable.dtLocation(0).LOCATION!FieldVal,V.Local.sSQL)
+F.ODBC.Connection!con.OpenCompanyConnection
+'Mum industries only wants to return 1 bin
+F.Data.DataTable.CreateFromSQL("dtBinInfo","con",V.Local.sSQL,True)
+F.ODBC.Connection!con.Close
+
+F.Data.DataView.Create("dtBinInfo","dvBinInfo")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.GetBinList.End
+
+Program.Sub.DisplayBinList.Start
+V.Local.sHTML.Declare
+F.Intrinsic.Control.Try
+
+F.Data.DataView.ToString("dtBinInfo","dvBinInfo","BIN*!*LOCATION*!*DATE_LAST_COUNT","</td><td style={1}padding:15px{1}>","</td></tr><tr><td style={1}padding:15px{1}>",V.Local.sHTML)
+
+F.Intrinsic.String.Build("<table><caption>Bins Ready to Count</caption><tr><th style={1}padding:15px{1}>Bin</th><th style={1}padding:15px{1}>Loc</th><th style={1}padding:15px{1}>Last Count</th><th style={1}padding:15px{1}>Count Flag</th></tr><tr><td style={1}padding:15px{1}>{0}</td></tr></table>",V.Local.sHTML,V.Ambient.DblQuote,V.Ambient.NewLine,V.Local.sHTML)
+
+F.Intrinsic.Variable.AddRV("Return",V.Local.sHTML)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.DisplayBinList.End
+
+Program.Sub.GetPassedValues.Start
+V.Local.sSQL.Declare
+F.Intrinsic.Control.Try
+
+F.Intrinsic.String.Build("select rtrim(FIELD_1) as LOCATION from V_WIRELESS_LINE where TRANS_ID = '{0}' and SEQ = '0000';",V.Args.TransID,V.Local.sSQL)
+F.ODBC.Connection!con.OpenCompanyConnection
+F.Data.DataTable.CreateFromSQL("dtLocation","con",V.Local.sSQL,True)
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.GetPassedValues.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$bbaker$}$20210303133447035$}$pM7xsHplA2E9VCTenDTJ47gi1rF/t66Ws2EA2XX56/m05PqeeN8pqw+w7SuUpAjo4soTqsSv+L8=
+Program.Sub.Comments.End
