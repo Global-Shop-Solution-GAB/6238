@@ -1,0 +1,100 @@
+﻿Program.Sub.Preflight.Start
+V.Global.iCountID.Declare
+Program.External.Include.Library("GCG_6238_ErrorHandling.lib")
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Author: BixRB
+'Date: 15 Jan 2021
+'Mum Industries
+'GS Mobile transaction 5 for custom cycle count process - get current count info
+V.Local.sReturn.Declare
+'V.Local.sColumns.Declare
+V.Local.sData.Declare
+F.Intrinsic.Control.Try
+
+F.Intrinsic.Control.CallSub(GetPassedFields,"TransID",V.Passed.DATA-TRANSID)
+F.Intrinsic.Control.CallSub(GetCountID)
+
+F.Intrinsic.Control.If(V.Global.iCountID,<>,-1)
+	'Get Table info
+	F.Intrinsic.Control.CallSub(GetCycleCountInfo)
+	
+	F.Data.DataTable.ExportHTML("dtCycleCount","Part*!*Loc*!*Descr*!*Bin*!*Lot*!*Heat*!*Serial*!*Qty","Part*!*Loc*!*Descr*!*Bin*!*Lot*!*Heat*!*Serial*!*Qty","CountCycle",True,V.Local.sData)
+	F.Intrinsic.String.Build("Count ID: {0}, {1}: {2}, Start: {3}<br><br>{4}",V.Global.iCountID.String,V.DataTable.dtRunID(0).COUNT_TYPE!FieldVal,V.DataTable.dtRunID(0).COUNT_STR!FieldVal,V.DataTable.dtRunID(0).START_TIME!FieldVal,V.Local.sData,V.Local.sReturn)
+'	F.Intrinsic.String.Replace(V.DataTable.dtCycleCount.FieldNames,"*!*",",",V.Local.sColumns)
+'	F.Data.DataView.Create("dtCycleCount","dvString",22,"","Part asc, Loc asc, BIN asc, LOT asc, HEAT asc, SERIAL asc")
+'	F.Data.DataView.ToString("dtCycleCount","dvString","Part*!*Loc*!*Descr*!*Bin*!*Lot*!*Heat*!*Serial*!*Qty",",","<br>",V.Local.sData)
+'	F.Intrinsic.String.Build("Count ID: {0}, {1}: {2}, Start: {3}<br><br>{4}<br>{5}",V.Global.iCountID.String,V.DataTable.dtRunID(0).COUNT_TYPE!FieldVal,V.DataTable.dtRunID(0).COUNT_STR!FieldVal,V.DataTable.dtRunID(0).START_TIME!FieldVal,V.Local.sColumns,V.Local.sData,V.Local.sReturn)
+F.Intrinsic.Control.Else
+	V.Local.sReturn.Set("No active count for current User")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.Close("dtTranInfo")
+F.Global.Mobile.SetCustomResult(V.Caller.CompanyCode,V.Passed.DATA-TRANSID,V.Local.sReturn)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.GetPassedFields.Start
+'Customer only wants to pass one field, but we'll support 10 for the future
+V.Local.sSQLHdr.Declare
+F.Intrinsic.Control.Try
+
+F.Intrinsic.String.Build("select USER_ID, ATTEMPTED_DATE, ATTEMPTED_TIME from V_WIRELESS_HDR where TRANS_ID = '{0}';",V.Args.TransID,V.Local.sSQLHdr)
+F.ODBC.Connection!con.OpenCompanyConnection
+F.Data.DataTable.CreateFromSQL("dtTranInfo","con",V.Local.sSQLHdr,True)
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.GetPassedFields.End
+
+Program.Sub.GetCountID.Start
+V.Local.sSQL.Declare
+F.Intrinsic.Control.Try
+
+F.Intrinsic.String.Build("select rtrim(if(isnull(BIN, '') = '', PART, BIN)) as COUNT_STR, if(isnull(BIN, '') = '', 'Part', 'Bin') as COUNT_TYPE, RUN_ID, START_TIME from GCG_6238_MAINT where USER_ID = '{0}' and STOP_TIME = '' order by Part asc, Loc asc, BIN asc, LOT asc, HEAT asc, SERIAL asc;",V.DataTable.dtTranInfo(0).USER_ID!FieldVal,V.Local.sSQL)
+F.ODBC.Connection!con.OpenCompanyConnection
+F.Data.DataTable.CreateFromSQL("dtRunID","con",V.Local.sSQL,True)
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Control.If(V.DataTable.dtRunID.RowCount,>,0)
+	'Record exists
+	V.Global.iCountID.Set(V.DataTable.dtRunID(0).RUN_ID!FieldVal)
+F.Intrinsic.Control.Else
+	V.Global.iCountID.Set(-1)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.GetCountID.End
+
+Program.Sub.GetCycleCountInfo.Start
+V.Local.sSQL.Declare
+F.Intrinsic.Control.Try
+
+'TODO: Remove Lot, Heat, Description
+'TODO: Add Counted Qty
+F.Intrinsic.String.Build("select rtrim(PART) as Part, rtrim(LOC) as Loc, rtrim(DESCR) as Descr, rtrim(LOT) as Lot, rtrim(BIN) as Bin, rtrim(HEAT) as Heat, rtrim(SERIAL) as Serial, rtrim(ORIG_QTY) as Qty from CYCLE_COUNT_BIN where RUNID = '{0}';",V.Global.iCountID.String,V.Local.sSQL)
+F.ODBC.Connection!con.OpenCompanyConnection
+F.Data.DataTable.CreateFromSQL("dtCycleCount","con",V.Local.sSQL,True)
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.GetCycleCountInfo.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$bbaker$}$20210816150050961$}$pM7xsHplA2E9VCTenDTJ47gi1rF/t66WhRPXdMQ89on0FcLdlYuHIf4mKhjqo9WoeFHq3hA4qbI=
+Program.Sub.Comments.End
