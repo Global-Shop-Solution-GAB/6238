@@ -1,0 +1,193 @@
+Program.Sub.Preflight.Start
+Program.External.Include.Library("GCG_6238_ErrorHandling.lib")
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Author: BixRB
+'Date: 15 Jan 2021
+'Mum Industries
+'GS Mobile transaction 2 for custom cycle count process - start count process for passed bins
+V.Local.sStatus.Declare
+F.Intrinsic.Control.Try
+
+F.Intrinsic.Control.CallSub(GetPassedFields,"TransID",V.Passed.DATA-TRANSID)
+
+F.Intrinsic.Control.CallSub(CheckBinInUse)
+'V.Args.BinStatus
+V.Local.sStatus.Set(V.Args.BinStatus)
+
+F.Data.DataView.Create("dtBins","dvBins")
+F.Data.DataView.SetFilter("dtBins","dvBins","[BIN_1] <> '' or [BIN_2] <> '' or [BIN_3] <> '' or [BIN_4] <> '' or [BIN_5] <> ''")
+
+F.Intrinsic.Control.If(V.DataView.dtBins!dvBins.RowCount,=,1)
+	F.Intrinsic.Control.CallSub(ProcessBins,"BinStatus",V.Local.sStatus)
+	'V.Args.BinStatus2
+	V.Local.sStatus.Set(V.Args.BinStatus2)
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.Close("dtBins")
+F.Data.DataTable.Close("dtTranInfo")
+F.Global.Mobile.SetCustomResult(V.Caller.CompanyCode,V.Passed.DATA-TRANSID,V.Local.sStatus)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.GetPassedFields.Start
+'Customer only wants to pass one field, but we'll support 10 for the future
+V.Local.sSQLLine.Declare
+V.Local.sSQLHdr.Declare
+F.Intrinsic.Control.Try
+
+F.Intrinsic.String.Build("select rtrim(FIELD_1) as BIN_1, rtrim(FIELD_2) as LOCATION_1, rtrim(FIELD_3) as BIN_2, rtrim(FIELD_4) as LOCATION_2, rtrim(FIELD_5) as BIN_3, rtrim(FIELD_6) as LOCATION_3, rtrim(FIELD_7) as BIN_4, rtrim(FIELD_8) as LOCATION_4, rtrim(FIELD_8) as BIN_5, rtrim(FIELD_10) as LOCATION_5 from V_WIRELESS_LINE where TRANS_ID = '{0}' and SEQ = '0000';",V.Args.TransID,V.Local.sSQLLine)
+F.Intrinsic.String.Build("select USER_ID, ATTEMPTED_DATE, ATTEMPTED_TIME from V_WIRELESS_HDR where TRANS_ID = '{0}';",V.Args.TransID,V.Local.sSQLHdr)
+F.ODBC.Connection!con.OpenCompanyConnection
+F.Data.DataTable.CreateFromSQL("dtBins","con",V.Local.sSQLLine,True)
+F.Data.DataTable.CreateFromSQL("dtTranInfo","con",V.Local.sSQLHdr,True)
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.GetPassedFields.End
+
+Program.Sub.CheckBinInUse.Start
+'We need to check if the bins are in use already
+V.Local.sSQL.Declare
+V.Local.sStatus.Declare
+V.Local.sCol.Declare
+V.Local.sLocCol.Declare
+V.Local.iCnt.Declare
+F.Intrinsic.Control.Try
+
+F.ODBC.Connection!con.OpenCompanyConnection
+F.Intrinsic.Control.For(V.Local.iCnt,1,5,1)
+	F.Intrinsic.String.Build("BIN_{0}",V.Local.iCnt.String,V.Local.sCol)
+	F.Intrinsic.String.Build("LOCATION_{0}",V.Local.iCnt.String,V.Local.sLocCol)
+	F.Intrinsic.Control.If(V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,!=,"")
+		F.Intrinsic.String.Build("select 1 from V_BIN_MASTER where BIN = '{0}' and LOCATION = '{1}';",V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,V.DataTable.dtBins(0).[V.Local.sLocCol]!FieldVal,V.Local.sSQL)
+		F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+		F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF)
+			'Bin does not exist
+			F.Intrinsic.Control.If(V.DataTable.dtBins(0).[V.Local.sLocCol]!FieldVal,=,"")
+				F.Intrinsic.String.Build("{0}Bin {1}, Location (Blank) could not be found on Bin Master file.<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,V.Local.sStatus)
+			F.Intrinsic.Control.Else
+				F.Intrinsic.String.Build("{0}Bin {1}, Location {2} could not be found on Bin Master file.<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,V.DataTable.dtBins(0).[V.Local.sLocCol]!FieldVal,V.Local.sStatus)
+			F.Intrinsic.Control.EndIf
+			F.Data.DataTable.SetValue("dtBins",0,V.Local.sCol,"")
+		F.Intrinsic.Control.Else
+			'Bin exists
+			'Check that the user isn't already setup to count something
+			F.Intrinsic.String.Build("select top 1 DATE_LAST_COUNT, RUN_ID, USER_ID, '' as placeholder, START_TIME, BIN, PART, LOCATION from GCG_6238_MAINT where USER_ID = '{0}' and COUNT_FLAG = 'Y' and RUN_ID <> '';",V.DataTable.dtTranInfo(0).USER_ID!FieldVal,V.Local.sSQL)
+			F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+			F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF.Not)
+				'User is flagged to count something
+				F.Intrinsic.String.Split(V.Local.sSQL,"*!*",V.Local.sSQL)
+				F.Intrinsic.Control.If(V.Local.sSQL(5).Trim,!=,"")
+					F.Intrinsic.String.Build("{0}You are already flagged to count Bin {1}, Location {4} starting on Date {2} and Time {3}, please close out this count before starting a new one<br>",V.Local.sStatus,V.Local.sSQL(5).Trim,V.Local.sSQL(0),V.Local.sSQL(4),V.Local.sSQL(7).Trim,V.Local.sStatus)
+				F.Intrinsic.Control.Else
+					F.Intrinsic.String.Build("{0}You are already flagged to count Part {1}, Location {4} starting on Date {2} and Time {3}, please close out this count before starting a new one<br>",V.Local.sStatus,V.Local.sSQL(6).Trim,V.Local.sSQL(0),V.Local.sSQL(4),V.Local.sSQL(7).Trim,V.Local.sStatus)
+				F.Intrinsic.Control.EndIf
+				F.Data.DataTable.SetValue("dtBins",0,V.Local.sCol,"")
+			F.Intrinsic.Control.Else
+				'User is not flagged to count anything
+				F.Intrinsic.String.Build("select top 1 DATE_LAST_COUNT, RUN_ID, USER_ID, '' as PLACEHOLDER, START_TIME from GCG_6238_MAINT where BIN = '{0}' and LOCATION = '{1}' and COUNT_FLAG = 'Y';",V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,V.DataTable.dtBins(0).[V.Local.sLocCol]!FieldVal,V.Local.sSQL)
+				F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+				F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF.Not)
+					'Bin on maint table
+					F.Intrinsic.String.Split(V.Local.sSQL,"*!*",V.Local.sSQL)
+					'Check run ID
+					F.Intrinsic.Control.If(V.Local.sSQL(1),!=,"")
+						F.Intrinsic.String.Build("{0}Bin {1}, Location {5} is currently in use by User {2} starting on Date {3} and Time {4}<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,V.Local.sSQL(2),V.Local.sSQL(0),V.Local.sSQL(4),V.DataTable.dtBins(0).[V.Local.sLocCol]!FieldVal,V.Local.sStatus)
+						F.Data.DataTable.SetValue("dtBins",0,V.Local.sCol,"")
+					F.Intrinsic.Control.EndIf
+					V.Local.sSQL.Redim(0,0)
+				F.Intrinsic.Control.Else
+					'Bin not on maint
+					F.Intrinsic.String.Build("{0}Bin {1}, Location {2} is not setup for counting in Custom Counting Maintenance<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,V.DataTable.dtBins(0).[V.Local.sLocCol]!FieldVal,V.Local.sStatus)
+					F.Data.DataTable.SetValue("dtBins",0,V.Local.sCol,"")
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.iCnt)
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Variable.AddRV("BinStatus",V.Local.sStatus)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.CheckBinInUse.End
+
+Program.Sub.ProcessBins.Start
+V.Local.sSQL.Declare
+V.Local.sCol.Declare
+V.Local.sLocCol.Declare
+V.Local.sStatus.Declare
+V.Local.iCnt.Declare
+V.Local.iRunID.Declare
+V.Local.dDate.Declare
+V.Local.dTime.Declare
+F.Intrinsic.Control.Try
+
+F.Global.BI.GetRunID(V.Local.iRunID)
+
+V.Local.sStatus.Set(V.Args.BinStatus)
+
+'Add Record to XREF using date and time values with generated Run ID
+V.Local.dDate.Set(V.DataTable.dtTranInfo(0).ATTEMPTED_DATE!FieldVal)
+V.Local.dTime.Set(V.DataTable.dtTranInfo(0).ATTEMPTED_TIME!FieldVal)
+F.Intrinsic.String.Build("insert into CYCLE_COUNT_XREF (DATE, TIME, XUSER, RUN_ID) values ('{2}', '{3}', '{0}', {1});",V.DataTable.dtTranInfo(0).USER_ID!FieldVal,V.Local.iRunID,V.Local.dDate.PervasiveDate,V.Local.dTime.FormatHH:NN:SS,V.Local.sSQL)
+F.ODBC.Connection!con.OpenCompanyConnection
+F.ODBC.Connection!con.Execute(V.Local.sSQL)
+
+F.Intrinsic.String.Build("{0}Created Bin Count XRef record, Cycle Count ID {1}<br>",V.Local.sStatus,V.Local.iRunID.String,V.Local.sStatus)
+
+F.Intrinsic.Control.For(V.Local.iCnt,1,5,1)
+	F.Intrinsic.String.Build("BIN_{0}",V.Local.iCnt.String,V.Local.sCol)
+	F.Intrinsic.String.Build("LOCATION_{0}",V.Local.iCnt.String,V.Local.sLocCol)
+	F.Intrinsic.Control.If(V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,!=,"")
+		'Get Item Master Records
+		F.Intrinsic.String.Build("select {0} as RUNID, A.PART, A.LOCATION as LOC, '' as DESCR, A.LOT, A.BIN, A.HEAT, A.SERIAL_NUMBER as SERIAL, B.UM_INVENTORY as UM, B.PRODUCT_LINE as PL, A.UNIT_COST as ORIG_COST, A.UNIT_COST as NEW_COST, A.QUANTITY as ORIG_QTY, cast(0 as Float) as ADJUST, cast(1 as Bit) as LOT_BIN from V_ITEM_MASTER A left join V_INVENTORY_MSTR B on A.PART = B.PART and A.LOCATION = B.LOCATION where A.BIN = '{1}' and A.LOCATION = '{2}' order by A.PART, A.LOCATION, A.BIN;",V.Local.iRunID.String,V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,V.DataTable.dtBins(0).[V.Local.sLocCol]!FieldVal,V.Local.sSQL)
+		F.Data.DataTable.CreateFromSQL("dtItemMaster","con",V.Local.sSQL,False)
+		F.Intrinsic.Control.If(V.DataTable.dtItemMaster.RowCount,>,0)
+			'Delete bin records from INV_PHYS_VAR
+			F.Intrinsic.String.Build("delete from INV_PHYS_VAR where BIN = '{0}' and LOCATION = '{1}';",V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,V.DataTable.dtBins(0).[V.Local.sLocCol]!FieldVal,V.Local.sSQL)
+			F.ODBC.Connection!con.Execute(V.Local.sSQL)
+			F.Intrinsic.String.Build("{0}Cleared INV_PHYS_VAR data for Bin {1}, Location {2}<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,V.DataTable.dtBins(0).[V.Local.sLocCol]!FieldVal,V.Local.sStatus)
+			'update maint table to setup bin for counting
+			F.Intrinsic.String.Build("update GCG_6238_MAINT set DATE_LAST_COUNT = '{1}', RUN_ID = '{2}', USER_ID = '{3}', START_TIME = '{4}', STOP_TIME = '' where BIN = '{0}' and LOCATION = '{5}' and COUNT_FLAG = 'Y';",V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,V.Local.dDate.PervasiveDate,V.Local.iRunID,V.DataTable.dtTranInfo(0).USER_ID!FieldVal,V.Local.dTime.FormatHH:NN,V.DataTable.dtBins(0).[V.Local.sLocCol]!FieldVal,V.Local.sSQL)
+			F.ODBC.Connection!con.Execute(V.Local.sSQL)
+			F.Intrinsic.String.Build("{0}Updated Bin maintenance record for Bin {1}, Location {2}<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,V.DataTable.dtBins(0).[V.Local.sLocCol]!FieldVal,V.Local.sStatus)
+			'add Item Master Records to the Cycle Count Tables
+			F.Data.DataTable.SaveToDB("dtItemMaster","con","CYCLE_COUNT_BIN","",128)
+			F.Intrinsic.String.Build("{0}Filled in Counting Sheet info for Bin {1}, Location {2}<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,V.DataTable.dtBins(0).[V.Local.sLocCol]!FieldVal,V.Local.sStatus)
+		F.Intrinsic.Control.Else
+			F.Intrinsic.String.Build("{0}No Item Master records found for Bin {1}, Location {2}<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,V.DataTable.dtBins(0).[V.Local.sLocCol]!FieldVal,V.Local.sStatus)
+			'update maint table to setup bin for counting
+			F.Intrinsic.String.Build("update GCG_6238_MAINT set DATE_LAST_COUNT = '{1}', RUN_ID = '{2}', USER_ID = '{3}', START_TIME = '{4}', STOP_TIME = '' where BIN = '{0}' and LOCATION = '{5}' and COUNT_FLAG = 'Y';",V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,V.Local.dDate.PervasiveDate,V.Local.iRunID,V.DataTable.dtTranInfo(0).USER_ID!FieldVal,V.Local.dTime.FormatHH:NN,V.DataTable.dtBins(0).[V.Local.sLocCol]!FieldVal,V.Local.sSQL)
+			F.ODBC.Connection!con.Execute(V.Local.sSQL)
+			F.Intrinsic.String.Build("{0}Updated Bin maintenance record for Bin {1}, Location {2}<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Local.sCol]!FieldVal,V.DataTable.dtBins(0).[V.Local.sLocCol]!FieldVal,V.Local.sStatus)
+		F.Intrinsic.Control.EndIf
+		F.Data.DataTable.Close("dtItemMaster")
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.iCnt)
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Variable.AddRV("BinStatus2",V.Local.sStatus)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.ProcessBins.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$bbaker$}$20210303132432183$}$pM7xsHplA2E9VCTenDTJ47gi1rF/t66Ws2EA2XX56/k25eBQzdbbLwLwVJEeLC8AS9NeMxSOtBI=
+Program.Sub.Comments.End
