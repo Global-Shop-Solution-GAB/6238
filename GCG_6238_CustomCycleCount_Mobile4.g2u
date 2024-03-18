@@ -1,0 +1,275 @@
+﻿Program.Sub.Preflight.Start
+V.Global.sCol.Declare
+Program.External.Include.Library("GCG_6238_ErrorHandling.lib")
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Author: BixRB
+'Date: 15 Jan 2021
+'Mum Industries
+'GS Mobile transaction 4 for custom cycle count process - end custom counting cycle
+V.Local.sStatus.Declare
+F.Intrinsic.Control.Try
+
+F.Intrinsic.Control.CallSub(GetPassedFields,"TransID",V.Passed.DATA-TRANSID)
+
+F.Intrinsic.Control.If(V.Global.sCol,=,"Bin")
+	F.Intrinsic.Control.CallSub(CheckBinInUse)
+F.Intrinsic.Control.ElseIf(V.Global.sCol,=,"Part")
+	F.Intrinsic.Control.CallSub(CheckPartInUse)
+F.Intrinsic.Control.EndIf
+'V.Args.BinStatus
+V.Local.sStatus.Set(V.Args.BinStatus)
+
+F.Data.DataView.Create("dtBins","dvBin")
+F.Data.DataView.Create("dtBins","dvPart")
+F.Data.DataView.SetFilter("dtBins","dvBin","[BIN] <> ''")
+F.Data.DataView.SetFilter("dtBins","dvPart","[PART] <> ''")
+
+F.Intrinsic.Control.If(V.DataView.dtBins!dvBin.RowCount,=,1)
+	F.Intrinsic.Control.CallSub(ProcessBins,"BinStatus",V.Local.sStatus)
+	'V.Args.BinStatus2
+	V.Local.sStatus.Set(V.Args.BinStatus2)
+F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.If(V.DataView.dtBins!dvPart.RowCount,=,1)
+	F.Intrinsic.Control.CallSub(ProcessParts,"BinStatus",V.Local.sStatus)
+	'V.Args.BinStatus2
+	V.Local.sStatus.Set(V.Args.BinStatus2)
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.Close("dtBins")
+F.Data.DataTable.Close("dtTranInfo")
+F.Global.Mobile.SetCustomResult(V.Caller.CompanyCode,V.Passed.DATA-TRANSID,V.Local.sStatus)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.GetPassedFields.Start
+'Customer only wants to pass one field, but we'll support 10 for the future
+V.Local.sSQLLine.Declare
+V.Local.sSQLHdr.Declare
+F.Intrinsic.Control.Try
+
+F.Intrinsic.String.Build("select rtrim(FIELD_1) as BIN, rtrim(FIELD_2) as PART, rtrim(FIELD_3) as LOCATION from V_WIRELESS_LINE where TRANS_ID = '{0}' and SEQ = '0000';",V.Args.TransID,V.Local.sSQLLine)
+F.Intrinsic.String.Build("select USER_ID, ATTEMPTED_DATE, ATTEMPTED_TIME from V_WIRELESS_HDR where TRANS_ID = '{0}';",V.Args.TransID,V.Local.sSQLHdr)
+F.ODBC.Connection!con.OpenCompanyConnection
+F.Data.DataTable.CreateFromSQL("dtBins","con",V.Local.sSQLLine,True)
+F.Data.DataTable.CreateFromSQL("dtTranInfo","con",V.Local.sSQLHdr,True)
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Control.If(V.DataTable.dtBins(0).BIN!FieldVal,!=,"",and,V.DataTable.dtBins(0).PART!FieldVal,=,"")
+	V.Global.sCol.Set("Bin")
+F.Intrinsic.Control.ElseIf(V.DataTable.dtBins(0).PART!FieldVal,!=,"",and,V.DataTable.dtBins(0).BIN!FieldVal,=,"")
+	V.Global.sCol.Set("Part")
+F.Intrinsic.Control.ElseIf(V.DataTable.dtBins(0).BIN!FieldVal,!=,"",and,V.DataTable.dtBins(0).PART!FieldVal,!=,"")
+	F.Global.Mobile.SetCustomResult(V.Caller.CompanyCode,V.Args.TransID,"Please only enter one between the Bin and Part.")
+	F.Data.DataTable.Close("dtBins")
+	F.Data.DataTable.Close("dtTranInfo")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.Else
+	'All blank
+	F.Global.Mobile.SetCustomResult(V.Caller.CompanyCode,V.Args.TransID,"A Bin or Part is needed for this transaction.")
+	F.Data.DataTable.Close("dtBins")
+	F.Data.DataTable.Close("dtTranInfo")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.GetPassedFields.End
+
+Program.Sub.CheckBinInUse.Start
+'We need to check if the bin is in use already
+V.Local.sSQL.Declare
+V.Local.sStatus.Declare
+V.Local.iCnt.Declare
+F.Intrinsic.Control.Try
+
+F.ODBC.Connection!con.OpenCompanyConnection
+F.Intrinsic.String.Build("select 1 from V_BIN_MASTER where BIN = '{0}' and LOCATION = '{1}';",V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sSQL)
+F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF)
+	'Bin does not exist
+	F.Intrinsic.String.Build("{0}Bin {1}, Location {2} could not be found on Bin Master file<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sStatus)
+	F.Data.DataTable.SetValue("dtBins",0,V.Global.sCol,"")
+F.Intrinsic.Control.Else
+	'Bin exists
+	F.Intrinsic.String.Build("select top 1 DATE_LAST_COUNT, RUN_ID, USER_ID, '' as PLACEHOLDER, START_TIME from GCG_6238_MAINT where BIN = '{0}' and LOCATION = '{1}' and COUNT_FLAG = 'Y';",V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sSQL)
+	F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+	F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF.Not)
+		'Bin on maint table
+		F.Intrinsic.String.Split(V.Local.sSQL,"*!*",V.Local.sSQL)
+		'Check run ID
+		F.Intrinsic.Control.If(V.Local.sSQL(1),=,"")
+			F.Intrinsic.String.Build("{0}Bin {1}, Location {2} is not currently in use<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sStatus)
+			F.Data.DataTable.SetValue("dtBins",0,V.Global.sCol,"")
+		F.Intrinsic.Control.EndIf
+		V.Local.sSQL.Redim(0,0)
+	F.Intrinsic.Control.Else
+		'Bin not on maint
+		F.Intrinsic.String.Build("{0}Bin {1}, Location {2} is not setup for counting in Custom Counting Maintenance<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sStatus)
+		F.Data.DataTable.SetValue("dtBins",0,V.Global.sCol,"")
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Variable.AddRV("BinStatus",V.Local.sStatus)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.CheckBinInUse.End
+
+Program.Sub.ProcessBins.Start
+V.Local.sSQL.Declare
+V.Local.sStatus.Declare
+V.Local.sEmailMsg.Declare
+V.Local.iCnt.Declare
+V.Local.dDate.Declare
+V.Local.dTime.Declare
+F.Intrinsic.Control.Try
+
+V.Local.sStatus.Set(V.Args.BinStatus)
+F.Intrinsic.String.Build("User {0} has ended Cycle Counting for the following Bin;Location:{1}",V.DataTable.dtTranInfo(0).USER_ID!FieldVal,V.Ambient.NewLine,V.Local.sEmailMsg)
+V.Local.dDate.Set(V.DataTable.dtTranInfo(0).ATTEMPTED_DATE!FieldVal)
+V.Local.dTime.Set(V.DataTable.dtTranInfo(0).ATTEMPTED_TIME!FieldVal)
+
+F.ODBC.Connection!con.OpenCompanyConnection
+'update maint table to end bin counting
+F.Intrinsic.String.Build("update GCG_6238_MAINT set RUN_ID = '', STOP_TIME = '{1}' where BIN = '{0}' and LOCATION = '{2}' and COUNT_FLAG = 'Y';",V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.Local.dTime.FormatHH:NN,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sSQL)
+F.ODBC.Connection!con.Execute(V.Local.sSQL)
+F.Intrinsic.String.Build("{0}Ended counting for Bin {1}, Location {2}<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sStatus)
+F.Intrinsic.String.Build("{0}{1}{2};{3}",V.Local.sEmailMsg,V.Ambient.NewLine,V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sEmailMsg)
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.String.Build("{0}{1}{1}Date Logged: {2}{1}Time Logged: {3}",V.Local.sEmailMsg,V.Ambient.NewLine,V.Local.dDate.PervasiveDate,V.Local.dTime.FormatHH:NN:SS,V.Local.sEmailMsg)
+F.Intrinsic.Control.CallSub(SendEmail,"EmailMsg",V.Local.sEmailMsg)
+
+F.Intrinsic.Variable.AddRv("BinStatus2",V.Local.sStatus)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.ProcessBins.End
+
+Program.Sub.SendEmail.Start
+V.Local.sRecipient.Declare
+V.Local.sSender.Declare
+V.Local.sSubject.Declare
+V.Local.iUser.Declare
+F.Intrinsic.Control.Try
+
+F.Global.Security.GetGroupEmails("COUNTGRP",V.Caller.CompanyCode,V.Local.sRecipient)
+F.Intrinsic.Control.If(V.Local.sRecipient,=,"")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+F.Global.Security.GetUserId(V.Caller.User,V.Caller.CompanyCode,V.Local.iUser)
+
+F.Global.Security.GetUserEmail(V.Caller.User,V.Caller.CompanyCode,V.Local.sSender)
+
+F.Intrinsic.String.Split(V.Local.sRecipient,"*!*",V.Local.sRecipient)
+F.Intrinsic.String.RemoveArrayDuplicates(V.Local.sRecipient,V.Local.sRecipient)
+F.Intrinsic.String.Join(V.Local.sRecipient,"@!@*!*")
+V.Local.sRecipient.RedimPreserve(0,0)
+F.Intrinsic.String.Build("*!*{0}",V.Local.sRecipient,V.Local.sRecipient)
+
+F.Intrinsic.String.Build("{0}*!*",V.Local.sSender,V.Local.sSender)
+
+F.Intrinsic.String.Build("Cycle Counting Ended for {0} {1}",V.Global.sCol,V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.Local.sSubject)
+
+F.Global.Messaging.QueueMessage(V.Caller.CompanyCode,V.Local.iUser,"GCG_6238",V.Local.sSubject,V.Local.sSender,V.Local.sRecipient,V.Args.EmailMsg)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.SendEmail.End
+
+Program.Sub.ProcessParts.Start
+V.Local.sSQL.Declare
+V.Local.sStatus.Declare
+V.Local.sEmailMsg.Declare
+V.Local.iCnt.Declare
+V.Local.dDate.Declare
+V.Local.dTime.Declare
+F.Intrinsic.Control.Try
+
+V.Local.sStatus.Set(V.Args.BinStatus)
+F.Intrinsic.String.Build("User {0} has ended Cycle Counting for the following Part;Location:{1}",V.DataTable.dtTranInfo(0).USER_ID!FieldVal,V.Ambient.NewLine,V.Local.sEmailMsg)
+V.Local.dDate.Set(V.DataTable.dtTranInfo(0).ATTEMPTED_DATE!FieldVal)
+V.Local.dTime.Set(V.DataTable.dtTranInfo(0).ATTEMPTED_TIME!FieldVal)
+
+F.ODBC.Connection!con.OpenCompanyConnection
+'update maint table to end part counting
+F.Intrinsic.String.Build("update GCG_6238_MAINT set RUN_ID = '', STOP_TIME = '{1}' where PART = '{0}' and LOCATION = '{2}' and COUNT_FLAG = 'Y';",V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.Local.dTime.FormatHH:NN,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sSQL)
+F.ODBC.Connection!con.Execute(V.Local.sSQL)
+F.Intrinsic.String.Build("{0}Ended counting for Part {1}, Location {2}<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sStatus)
+F.Intrinsic.String.Build("{0}{1}{2};{3}",V.Local.sEmailMsg,V.Ambient.NewLine,V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sEmailMsg)
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.String.Build("{0}{1}{1}Date Logged: {2}{1}Time Logged: {3}",V.Local.sEmailMsg,V.Ambient.NewLine,V.Local.dDate.PervasiveDate,V.Local.dTime.FormatHH:NN:SS,V.Local.sEmailMsg)
+F.Intrinsic.Control.CallSub(SendEmail,"EmailMsg",V.Local.sEmailMsg)
+
+F.Intrinsic.Variable.AddRv("BinStatus2",V.Local.sStatus)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.ProcessParts.End
+
+Program.Sub.CheckPartInUse.Start
+'We need to check if the Part is in use already
+V.Local.sSQL.Declare
+V.Local.sStatus.Declare
+V.Local.iCnt.Declare
+F.Intrinsic.Control.Try
+
+F.ODBC.Connection!con.OpenCompanyConnection
+F.Intrinsic.String.Build("select 1 from V_INVENTORY_MSTR where PART = '{0}' and LOCATION = '{1}';",V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sSQL)
+F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF)
+	'Part does not exist
+	F.Intrinsic.String.Build("{0}Part {1}, Location {2} could not be found on Inventory Master file<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sStatus)
+	F.Data.DataTable.SetValue("dtBins",0,V.Global.sCol,"")
+F.Intrinsic.Control.Else
+	'Part exists
+	F.Intrinsic.String.Build("select top 1 DATE_LAST_COUNT, RUN_ID, USER_ID, '' as PLACEHOLDER, START_TIME from GCG_6238_MAINT where PART = '{0}' and LOCATION = '{1}' and COUNT_FLAG = 'Y';",V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sSQL)
+	F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+	F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF.Not)
+		'Part on maint table
+		F.Intrinsic.String.Split(V.Local.sSQL,"*!*",V.Local.sSQL)
+		'Check run ID
+		F.Intrinsic.Control.If(V.Local.sSQL(1),=,"")
+			F.Intrinsic.String.Build("{0}Part {1}, Location {2} is not currently in use<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sStatus)
+			F.Data.DataTable.SetValue("dtBins",0,V.Global.sCol,"")
+		F.Intrinsic.Control.EndIf
+		V.Local.sSQL.Redim(0,0)
+	F.Intrinsic.Control.Else
+		'Part not on maint
+		F.Intrinsic.String.Build("{0}Part {1}, Location {2} is not currently in use<br>",V.Local.sStatus,V.DataTable.dtBins(0).[V.Global.sCol]!FieldVal,V.DataTable.dtBins(0).LOCATION!FieldVal,V.Local.sStatus)
+		F.Data.DataTable.SetValue("dtBins",0,V.Global.sCol,"")
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Variable.AddRV("BinStatus",V.Local.sStatus)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",V.Passed.DATA-TRANSID,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.CheckPartInUse.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$bbaker$}$20210303115052767$}$pM7xsHplA2E9VCTenDTJ47gi1rF/t66Ws2EA2XX56/n+pw5IjADGYjM2/4KD7DSD1eg5dNdlpFU=
+Program.Sub.Comments.End
