@@ -1,0 +1,150 @@
+﻿Program.Sub.Preflight.Start
+Program.External.Include.Library("GCG_6238_ErrorHandling.lib")
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Author: BixRB
+'Date: 15 Jan 2021
+'Mum Industries
+'GS Mobile transaction 3 for custom cycle count process - on P16 transaction, cycle count the bin
+F.Intrinsic.Control.Try
+
+F.Intrinsic.Control.If(V.Caller.Hook,!=,31953)
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.CallSub(GetPassedFields,"TransID",V.Passed.LINE-ID)
+
+F.Intrinsic.Control.CallSub(CheckTransactionDetails)
+'V.Args.CountFlag
+
+F.Intrinsic.Control.If(V.Args.CountFlag,=,"Y")
+	'Count it	
+	F.Intrinsic.Control.CallSub(Count)
+	
+	F.Intrinsic.Control.CallSub(VerifyItemMasterInCycleCountFile)
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.Close("dtPhysInv")
+F.Data.DataTable.Close("dtTranInfo")
+F.Data.DataTable.Close("dtMaint")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",-1,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.GetPassedFields.Start
+'Read in physical inventory information
+V.Local.sSQLLine.Declare
+V.Local.sSQLHdr.Declare
+F.Intrinsic.Control.Try
+
+F.Intrinsic.String.Build("select rtrim(FIELD_1) as PART, rtrim(FIELD_2) as LOCATION, cast(rtrim(FIELD_3) as Float) / 10000 as QTY, rtrim(FIELD_4) as BIN, rtrim(FIELD_5) as LOT, rtrim(FIELD_6) as HEAT, rtrim(FIELD_7) as SERIAL, rtrim(FIELD_8) as GROSS_WEIGHT, rtrim(FIELD_8) as TARE_WEIGHT, rtrim(FIELD_10) as REFERENCE, rtrim(FIELD_11) as NO_OF_COPIES from V_WIRELESS_LINE where TRANS_ID = '{0}' and SEQ = '0000';",V.Args.TransID,V.Local.sSQLLine)
+F.Intrinsic.String.Build("select USER_ID, ATTEMPTED_DATE, ATTEMPTED_TIME from V_WIRELESS_HDR where TRANS_ID = '{0}';",V.Args.TransID,V.Local.sSQLHdr)
+F.ODBC.Connection!con.OpenCompanyConnection
+F.Data.DataTable.CreateFromSQL("dtPhysInv","con",V.Local.sSQLLine,True)
+F.Data.DataTable.CreateFromSQL("dtTranInfo","con",V.Local.sSQLHdr,True)
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",-1,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.GetPassedFields.End
+
+Program.Sub.CheckTransactionDetails.Start
+'We need to check if the bin is in use already
+V.Local.sSQL.Declare
+V.Local.sStatus.Declare
+V.Local.iCnt.Declare
+F.Intrinsic.Control.Try
+
+F.Intrinsic.String.Build("select COUNT_FLAG, DATE_LAST_COUNT, START_TIME, RUN_ID from GCG_6238_MAINT where (BIN = '{0}' or PART = '{3}') and LOCATION = '{1}' and USER_ID = '{2}';",V.DataTable.dtPhysInv(0).BIN!FieldVal,V.DataTable.dtPhysInv(0).LOCATION!FieldVal,V.DataTable.dtTranInfo(0).USER_ID!FieldVal,V.DataTable.dtPhysInv(0).PART!FieldVal,V.Local.sSQL)
+F.ODBC.Connection!con.OpenCompanyConnection
+F.Data.DataTable.CreateFromSQL("dtMaint","con",V.Local.sSQL,True)
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Control.If(V.DataTable.dtMaint.RowCount,=,0)
+	F.Data.DataTable.Close("dtPhysInv")
+	F.Data.DataTable.Close("dtTranInfo")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Variable.AddRV("CountFlag",V.DataTable.dtMaint(0).COUNT_FLAG!FieldVal)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",-1,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.CheckTransactionDetails.End
+
+Program.Sub.Count.Start
+V.Local.sSQL.Declare
+F.Intrinsic.Control.Try
+
+F.ODBC.Connection!con.OpenCompanyConnection
+F.Intrinsic.Control.If(V.DataTable.dtMaint(0).RUN_ID!FieldVal,!=,"")
+	'Write RUN_ID to USER_1 on INV_PHYS_VAR
+	F.Intrinsic.String.Build("update INV_PHYS_VAR set USER_1 = '{0}' where PART = '{1}' and LOCATION = '{2}' and LOT = '{3}' and BIN = '{4}' and HEAT = '{5}' and SERIAL = '{6}' and LAST_CHG_USER = '{7}';",V.DataTable.dtMaint(0).RUN_ID!FieldVal,V.DataTable.dtPhysInv(0).PART!FieldVal,V.DataTable.dtPhysInv(0).LOCATION!FieldVal,V.DataTable.dtPhysInv(0).LOT!FieldVal,V.DataTable.dtPhysInv(0).BIN!FieldVal,V.DataTable.dtPhysInv(0).HEAT!FieldVal,V.DataTable.dtPhysInv(0).SERIAL!FieldVal,V.DataTable.dtTranInfo(0).USER_ID!FieldVal,V.Local.sSQL)
+	F.ODBC.Connection!con.Execute(V.Local.sSQL)
+F.Intrinsic.Control.Else
+	'Delete INV_PHYS_VAR record
+	F.Intrinsic.String.Build("delete from INV_PHYS_VAR where PART = '{0}' and LOCATION = '{1}' and LOT = '{2}' and BIN = '{3}' and HEAT = '{4}' and SERIAL = '{5}' and LAST_CHG_USER = '{6}';",V.DataTable.dtPhysInv(0).PART!FieldVal,V.DataTable.dtPhysInv(0).LOCATION!FieldVal,V.DataTable.dtPhysInv(0).LOT!FieldVal,V.DataTable.dtPhysInv(0).BIN!FieldVal,V.DataTable.dtPhysInv(0).HEAT!FieldVal,V.DataTable.dtPhysInv(0).SERIAL!FieldVal,V.DataTable.dtTranInfo(0).USER_ID!FieldVal,V.Local.sSQL)
+	F.ODBC.Connection!con.Execute(V.Local.sSQL)
+F.Intrinsic.Control.EndIf
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",-1,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.Count.End
+
+Program.Sub.VerifyItemMasterInCycleCountFile.Start
+V.Local.sSQL.Declare
+F.Intrinsic.Control.Try
+
+F.Intrinsic.Control.If(V.DataTable.dtMaint(0).RUN_ID!FieldVal,!=,"")
+	F.Intrinsic.String.Build("select 1 from CYCLE_COUNT_BIN where PART = '{0}' and LOC = '{1}' and LOT = '{2}' and BIN = '{3}' and HEAT = '{4}' and SERIAL = '{5}' and RUNID = '{6}';",V.DataTable.dtPhysInv(0).PART!FieldVal,V.DataTable.dtPhysInv(0).LOCATION!FieldVal,V.DataTable.dtPhysInv(0).LOT!FieldVal,V.DataTable.dtPhysInv(0).BIN!FieldVal,V.DataTable.dtPhysInv(0).HEAT!FieldVal,V.DataTable.dtPhysInv(0).SERIAL!FieldVal,V.DataTable.dtMaint(0).RUN_ID!FieldVal,V.Local.sSQL)
+	F.ODBC.Connection!con.OpenCompanyConnection
+	F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+	F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF)
+		'Item master record does not exist in cycle count file. add it
+		F.Intrinsic.String.Build("select {6} as RUNID, A.PART, A.LOCATION as LOC, '' as DESCR, A.LOT, A.BIN, A.HEAT, A.SERIAL_NUMBER as SERIAL, B.UM_INVENTORY as UM, B.PRODUCT_LINE as PL, A.UNIT_COST as ORIG_COST, A.UNIT_COST as NEW_COST, cast(0 as Float) as ORIG_QTY, cast(0 as Float) as ADJUST, cast(1 as Bit) as LOT_BIN from V_ITEM_MASTER A left join V_INVENTORY_MSTR B on A.PART = B.PART and A.LOCATION = B.LOCATION where A.PART = '{0}' and A.LOCATION = '{1}' and A.LOT = '{2}' and A.BIN = '{3}' and A.HEAT = '{4}' and A.SERIAL_NUMBER = '{5}';",V.DataTable.dtPhysInv(0).PART!FieldVal,V.DataTable.dtPhysInv(0).LOCATION!FieldVal,V.DataTable.dtPhysInv(0).LOT!FieldVal,V.DataTable.dtPhysInv(0).BIN!FieldVal,V.DataTable.dtPhysInv(0).HEAT!FieldVal,V.DataTable.dtPhysInv(0).SERIAL!FieldVal,V.DataTable.dtMaint(0).RUN_ID!FieldVal,V.Local.sSQL)
+		F.Data.DataTable.CreateFromSQL("dtItemMaster","con",V.Local.sSQL,False)
+		F.Intrinsic.Control.If(V.DataTable.dtItemMaster.RowCount,=,1)
+			'Found the record, add it
+			F.Data.DataTable.SaveToDB("dtItemMaster","con","CYCLE_COUNT_BIN","",128)
+		F.Intrinsic.Control.Else
+			'Could not find the record, or there are multiple records
+			'This should never be reached but let's handle it just in case
+			F.Intrinsic.String.Build("select UM_INVENTORY as UM, PRODUCT_LINE as PL from V_INVENTORY_MSTR where PART = '{0}' and LOCATION = '{1}';",V.DataTable.dtPhysInv(0).PART!FieldVal,V.DataTable.dtPhysInv(0).LOCATION!FieldVal,V.Local.sSQL)
+			F.Data.DataTable.CreateFromSQL("dtPart","con",V.Local.sSQL,False)
+			'Note: I am adding a 'default' case to these datatables if nothing comes back from the database
+			F.Intrinsic.String.Build("select COST from V_INVENTORY_COST where PART = '{0}' and LOCN = '{1}';",V.DataTable.dtPhysInv(0).PART!FieldVal,V.DataTable.dtPhysInv(0).LOCATION!FieldVal,V.Local.sSQL)
+			F.Data.DataTable.CreateFromSQL("dtCost","con",V.Local.sSQL,False)
+			F.Data.DataTable.AddRow("dtCost","COST",0)
+			F.Intrinsic.Control.If(V.DataTable.dtPart.RowCount,>,0)
+				F.Intrinsic.String.Build("insert into CYCLE_COUNT_BIN (RUNID, PART, LOC, DESCR, LOT, BIN, HEAT, SERIAL, UM, PL, ORIG_COST, NEW_COST, ORIG_QTY, ADJUST, LOT_BIN) values ('{6}', '{0}', '{1}', '', '{2}', '{3}', '{4}', '{5}', '{7}', '{8}', {9}, {9}, 0, 0, 1)",V.DataTable.dtPhysInv(0).PART!FieldVal,V.DataTable.dtPhysInv(0).LOCATION!FieldVal,V.DataTable.dtPhysInv(0).LOT!FieldVal,V.DataTable.dtPhysInv(0).BIN!FieldVal,V.DataTable.dtPhysInv(0).HEAT!FieldVal,V.DataTable.dtPhysInv(0).SERIAL!FieldVal,V.DataTable.dtMaint(0).RUN_ID!FieldVal,V.DataTable.dtPart(0).UM!FieldVal,V.DataTable.dtPart(0).PL!FieldVal,V.DataTable.dtCost(0).COST!FieldVal,V.Local.sSQL)
+				F.ODBC.Connection!con.Execute(V.Local.sSQL)
+			F.Intrinsic.Control.EndIf
+			F.Data.DataTable.Close("dtPart")
+			F.Data.DataTable.Close("dtCost")
+		F.Intrinsic.Control.EndIf
+		F.Data.DataTable.Close("dtItemMaster")
+	F.Intrinsic.Control.EndIf
+	F.ODBC.Connection!con.Close
+F.Intrinsic.Control.EndIF
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.CallSub(ErrorMobile,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Ambient.CurrentSubroutine,"TransID",-1,"FolderName","6238")
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.VerifyItemMasterInCycleCountFile.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$bbaker$}$20210503092705786$}$pM7xsHplA2E9VCTenDTJ47gi1rF/t66WNvqGDuov2XGi9XjflqqsUwh70Xe6g+uasR1MbCgoT4c=
+Program.Sub.Comments.End
