@@ -1,0 +1,717 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.F_Dash..Create(DashForm)
+Gui.F_Dash..Caption("Counting Dashboard")
+Gui.F_Dash..Size(860,440)
+Gui.F_Dash..MinX(0)
+Gui.F_Dash..MinY(0)
+Gui.F_Dash..Position(0,0)
+Gui.F_Dash..AlwaysOnTop(False)
+Gui.F_Dash..FontName("Tahoma")
+Gui.F_Dash..FontSize(8.25)
+Gui.F_Dash..ControlBox(True)
+Gui.F_Dash..MaxButton(True)
+Gui.F_Dash..MinButton(True)
+Gui.F_Dash..MousePointer(0)
+Gui.F_Dash..Moveable(True)
+Gui.F_Dash..Sizeable(True)
+Gui.F_Dash..ShowInTaskBar(True)
+Gui.F_Dash..TitleBar(True)
+Gui.F_Dash..BarRefreshButton(True)
+Gui.F_Dash..Event(UnLoad,F_Dash_UnLoad)
+Gui.F_Dash..Event(RefreshClick,F_Dash_RefreshClick)
+Gui.F_Dash..BarSaveButton(True,False)
+Gui.F_Dash..Event(SaveButtonClick,F_Dash_SaveButtonClick)
+Gui.F_Dash.gsgc_Parts.Create(GsGridControl)
+Gui.F_Dash.gsgc_Parts.Enabled(True)
+Gui.F_Dash.gsgc_Parts.Visible(True)
+Gui.F_Dash.gsgc_Parts.Zorder(0)
+Gui.F_Dash.gsgc_Parts.Size(860,374)
+Gui.F_Dash.gsgc_Parts.Position(0,0)
+Gui.F_Dash.gsgc_Parts.Dock(5)
+Gui.F_Dash.gsgc_Parts.Event(RowCellClick,gsgc_Parts_RowCellClick)
+Gui.F_Part..Create(BaseForm)
+Gui.F_Part..Caption("Start Cycle Count By Part")
+Gui.F_Part..Size(387,464)
+Gui.F_Part..MinX(0)
+Gui.F_Part..MinY(0)
+Gui.F_Part..Position(0,0)
+Gui.F_Part..AlwaysOnTop(False)
+Gui.F_Part..FontName("Tahoma")
+Gui.F_Part..FontSize(8.25)
+Gui.F_Part..ControlBox(True)
+Gui.F_Part..MaxButton(False)
+Gui.F_Part..MinButton(True)
+Gui.F_Part..MousePointer(0)
+Gui.F_Part..Moveable(True)
+Gui.F_Part..Sizeable(False)
+Gui.F_Part..ShowInTaskBar(True)
+Gui.F_Part..TitleBar(True)
+Gui.F_Part..Event(UnLoad,F_Part_UnLoad)
+Gui.F_Part.gsgcCCPart.Create(GsGridControl)
+Gui.F_Part.gsgcCCPart.Enabled(True)
+Gui.F_Part.gsgcCCPart.Visible(True)
+Gui.F_Part.gsgcCCPart.Zorder(0)
+Gui.F_Part.gsgcCCPart.Size(385,385)
+Gui.F_Part.gsgcCCPart.Position(0,0)
+Gui.F_Part.gsgcCCPart.Event(RowCellClick,gsgcCCPart_RowCellClick)
+Gui.F_Part.cmdNewCycleCount.Create(Button)
+Gui.F_Part.cmdNewCycleCount.Enabled(True)
+Gui.F_Part.cmdNewCycleCount.Visible(True)
+Gui.F_Part.cmdNewCycleCount.Zorder(0)
+Gui.F_Part.cmdNewCycleCount.Size(64,28)
+Gui.F_Part.cmdNewCycleCount.Position(8,398)
+Gui.F_Part.cmdNewCycleCount.Caption("Process")
+Gui.F_Part.cmdNewCycleCount.FontName("Tahoma")
+Gui.F_Part.cmdNewCycleCount.FontSize(8.25)
+Gui.F_Part.cmdNewCycleCount.Event(Click,cmdNewCycleCount_Click)
+Gui.F_Part.ddlUsers.Create(DropDownList)
+Gui.F_Part.ddlUsers.Enabled(True)
+Gui.F_Part.ddlUsers.Visible(True)
+Gui.F_Part.ddlUsers.Zorder(0)
+Gui.F_Part.ddlUsers.Size(90,20)
+Gui.F_Part.ddlUsers.Position(285,410)
+Gui.F_Part.ddlUsers.FontName("Tahoma")
+Gui.F_Part.ddlUsers.FontSize(8.25)
+Gui.F_Part.ddlUsers.Event(Change,ddlUsers_Change)
+Gui.F_Part.lblUsers.Create(Label,"GS Mobile User",True,71,13,0,287,395,True,0,"Tahoma",8.25,,0,0)
+Gui.F_Part.lblUsers.BorderStyle(0)
+Gui.F_Item..Create(BaseForm)
+Gui.F_Item..Caption("Lot/Bin Records")
+Gui.F_Item..Size(606,484)
+Gui.F_Item..MinX(0)
+Gui.F_Item..MinY(0)
+Gui.F_Item..Position(0,0)
+Gui.F_Item..AlwaysOnTop(False)
+Gui.F_Item..FontName("Tahoma")
+Gui.F_Item..FontSize(8.25)
+Gui.F_Item..ControlBox(True)
+Gui.F_Item..MaxButton(True)
+Gui.F_Item..MinButton(True)
+Gui.F_Item..MousePointer(0)
+Gui.F_Item..Moveable(True)
+Gui.F_Item..Sizeable(True)
+Gui.F_Item..ShowInTaskBar(True)
+Gui.F_Item..TitleBar(True)
+Gui.F_Item..Event(UnLoad,F_Item_UnLoad)
+Gui.F_Item.gsgcItem.Create(GsGridControl)
+Gui.F_Item.gsgcItem.Enabled(True)
+Gui.F_Item.gsgcItem.Visible(True)
+Gui.F_Item.gsgcItem.Zorder(0)
+Gui.F_Item.gsgcItem.Size(606,454)
+Gui.F_Item.gsgcItem.Position(0,0)
+Gui.F_Item.gsgcItem.Dock(5)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.sCountID.Declare
+V.Global.bPartShow.Declare
+V.Global.bItemShow.Declare
+Program.External.Include.Library("GCG_6238_ErrorHandling.lib")
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
+V.Local.sSQL.Declare
+
+Gui.F_Dash..ContextMenuCreate("ctxDash")
+Gui.F_Dash..ContextMenuAddItem("ctxDash","PartCount",V.Enum.MenuItemType!Button,"Start Cycle Count by Part")
+Gui.F_Dash..ContextMenuSetItemEventHandler("ctxDash","PartCount","CycleCountPart")
+Gui.F_Dash.gsgc_Parts.ContextMenuAttach("ctxDash")
+
+F.Intrinsic.String.Build("select rtrim(B.GSUSERNAME), rtrim(B.GSUSERNAME) from MOBILE_USER_COMPANY A left join MOBILE_USER_INFO B on A.UID = B.UID where A.COCODE = '{0}';",V.Caller.CompanyCode,V.Local.sSql)
+F.ODBC.Connection!ccon.OpenCommonConnection
+F.Data.Dictionary.CreateFromSQL("dictMobileUsers","ccon",V.Local.sSql)
+F.ODBC.Connection!ccon.Close
+Gui.F_Part.ddlUsers.AddItems("Dictionary","dictMobileUsers")
+F.Data.Dictionary.Close("dictMobileUsers")
+
+Gui.F_Dash..Show
+
+Program.Sub.Main.End
+
+Program.Sub.catching.Start
+F.Intrinsic.Control.CallSub(ErrorMessage,"ScriptFile",V.Caller.ScriptFile,"CurrentSubroutine",V.Args.sub)
+F.Intrinsic.Control.CallSub(F_Dash_UnLoad)
+Program.Sub.catching.End
+
+Program.Sub.F_Dash_UnLoad.Start
+F.Intrinsic.Control.If(V.DataTable.PARTS.Exists)
+	F.Intrinsic.Control.CallSub(Serialize)
+	F.Data.DataTable.Close("PARTS")
+F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.End
+Program.Sub.F_Dash_UnLoad.End
+
+Program.Sub.F_Dash_RefreshClick.Start
+v.Local.sRet.Declare
+V.Local.sDate.Declare
+V.Local.sCaption.Declare
+f.Intrinsic.Control.Try
+
+'open connection
+f.ODBC.Connection!coredb.opencompanyconnection
+
+'create a browser to select our count records
+f.Intrinsic.UI.Browser("Open Count Sheets","coredb","SELECT A.DATE, A.TIME, A.RUN_ID, if(isnull(B.STOP_TIME, '') = '', cast(1 as Bit), cast(0 as Bit)) as COUNTING, isnull(B.USER_ID, '') as COUNTER FROM CYCLE_COUNT_XREF A left join GCG_6238_MAINT B on A.RUN_ID = B.RUN_ID","Start Date*!*Start Time*!*Run ID*!*Counting*!*Counter","300*!*400*!*300*!*200*!*200",V.Local.sRet)
+
+'after selection
+F.Intrinsic.Control.If(V.Local.sRet,<>,v.Ambient.Cancel)
+	f.Intrinsic.String.Split(v.Local.sRet,"*!*",v.Local.sRet)
+	F.Intrinsic.String.Split(V.Local.sRet(0)," ",V.Local.sDate)
+	F.Intrinsic.String.Build("Counting Dashboard - ID: {0} - Start: {1} {2}",V.Local.sRet(2),V.Local.sDate(0),V.Local.sRet(1),V.Local.sCaption)
+	Gui.F_Dash..Caption(V.Local.sCaption)
+	f.Intrinsic.Control.CallSub(load_count, "COUNTID",V.Local.sRet(2))
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!COREDB.Close
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.F_Dash_RefreshClick.End
+
+Program.Sub.load_count.Start
+f.Intrinsic.Control.Try
+v.Local.sError.Declare
+V.Local.sSql.Declare
+v.Local.sFile.Declare
+v.Local.sRet.Declare
+v.Local.bRet.Declare
+
+F.Intrinsic.Control.If(V.Args.COUNTID,>,"")
+	v.Local.sRet.Set(v.Args.COUNTID)
+	V.Global.sCountID.Set(V.Local.sRet)
+
+	F.Intrinsic.Control.If(V.DataTable.PARTS.Exists)
+		F.Intrinsic.Control.CallSub(Serialize)
+		f.Data.DataTable.Close("PARTS")
+	F.Intrinsic.Control.EndIf
+	f.Intrinsic.String.Build("SELECT RUNID, rtrim(PART) as PART, rtrim(LOC) as LOC, rtrim(DESCR) as DESCR, rtrim(LOT) as LOT, rtrim(BIN) as BIN, rtrim(HEAT) as HEAT, rtrim(SERIAL) as SERIAL, UM, PL, ABC, ORIG_QTY AS GSS_QTY FROM CYCLE_COUNT_BIN WHERE RUNID = {0} ORDER BY PART, LOC, LOT, BIN, HEAT, SERIAL",v.Local.sRet,V.Local.sSql)
+	f.Data.DataTable.CreateFromSQL("dtCycleCount","coredb",v.Local.sSql,true)
+	F.Intrinsic.String.Build("select rtrim(PART) as PART, rtrim(LOCATION) as LOCATION, LOT, BIN, HEAT, SERIAL, sum(QTY) as COUNT_QTY, cast(rtrim(USER_1) as BIGINT) as RUNID from INV_PHYS_VAR where USER_1 = '{0}' group by RUNID, PART, LOCATION, LOT, BIN, HEAT, SERIAL;",V.Local.sRet,V.Local.sSql)
+	F.Data.DataTable.CreateFromSQL("dtInvPhysVar","coredb",V.Local.sSql,true)
+	F.Data.Linq.Join("LeftJoin","DATATABLE","dtCycleCount*!*MASTER","DATATABLE","dtInvPhysVar*!*COUNT","MASTER.PART = COUNT.PART and MASTER.LOC = COUNT.LOCATION and MASTER.LOT = COUNT.LOT and MASTER.BIN = COUNT.BIN and MASTER.SERIAL = COUNT.SERIAL","MASTER.RUNID*!*MASTER.PART*!*MASTER.LOC*!*MASTER.DESCR*!*MASTER.LOT*!*MASTER.BIN*!*MASTER.HEAT*!*MASTER.SERIAL*!*MASTER.UM*!*MASTER.PL*!*MASTER.ABC*!*MASTER.GSS_QTY*!*COUNT.COUNT_QTY","","","","PARTS",True)
+	F.Data.DataTable.Close("dtCycleCount")
+	F.Data.DataTable.Close("dtInvPhysVar")
+	F.Data.DataView.Create("PARTS","dvNullCount")
+	F.Data.DataView.SetFilter("PARTS","dvNullCount","isnull([COUNT_QTY], 0) = 0")
+	F.Data.DataView.SetValue("PARTS","dvNullCount",-1,"COUNT_QTY",0)
+	F.Data.DataView.Close("PARTS","dvNullCount")
+	
+	F.Data.DataTable.AddColumn("PARTS","APPROVE","BOOLEAN",False)
+	F.Data.DataTable.AddColumn("PARTS","INVESTIGATE","BOOLEAN",False)
+	
+	gui.F_Dash.GSGC_Parts.visible(false)
+	
+	f.Data.DataView.Create("PARTS","partsView")
+	gui.F_Dash.GSGC_Parts.AddGridviewFromDataView("GV_PARTS","PARTS","PARTSVIEW")
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","COUNT_QTY","AllowEdit",True)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","COUNT_QTY","ReadOnly",False)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","RUNID","AllowEdit",False)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","LOC","AllowEdit",False)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","DESCR","AllowEdit",False)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","LOT","AllowEdit",False)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","BIN","AllowEdit",False)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","HEAT","AllowEdit",False)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","SERIAL","AllowEdit",False)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","UM","AllowEdit",False)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","GSS_QTY","AllowEdit",False)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","APPROVE","AllowEdit",False)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","INVESTIGATE","AllowEdit",False)
+	
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","RUNID","Caption","RunID")
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","PART","Caption","Part")
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","LOC","Caption","Location")
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","DESCR","Caption","Description")
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","LOT","Caption","Lot")
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","BIN","Caption","Bin")
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","HEAT","Caption","Heat")
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","SERIAL","Caption","Serial Number")
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","UM","Caption","UM")
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","GSS_QTY","Caption","Original Qty")
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","COUNT_QTY","Caption","Counted Qty")
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","APPROVE","Caption","Approve")
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","INVESTIGATE","Caption","Investigate")
+	
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","GSS_QTY",V.Enum.ColumnPropertyNames!DisplayCustomNumeric,"#,##0.0000")
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","COUNT_QTY",V.Enum.ColumnPropertyNames!DisplayCustomNumeric,"#,##0.0000")
+	
+	'hide
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","RUNID","Visible",False)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","RUNID","AllowShowHide",False)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","PL","Visible",False)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","ABC","Visible",False)
+	
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","PART","IsHyperLink",True)
+	gui.F_Dash.GSGC_Parts.SetColumnProperty("GV_PARTS","PART","AllowEdit",False)
+	
+	gui.F_Dash.GSGC_Parts.SetGridviewProperty("GV_PARTS","EnterKeyNavigation","Vertical")
+	
+	gui.F_Dash.GSGC_Parts.AddStyleFormatCondition("GV_PARTS","COUNT_QTY","NOBALANCE","EXPRESSION","[COUNT_QTY] <> [GSS_QTY]")
+	gui.F_Dash.GSGC_Parts.SetStyleFormatConditionProperty("GV_PARTS","COUNT_QTY","NOBALANCE","BACKCOLOR",V.Enum.ThemeColors!ColorYellow.Highlight)
+	GUI.F_Dash.GSGC_Parts.SetStyleFormatConditionProperty("GV_PARTS","COUNT_QTY","NOBALANCE","APPLYTOROW",True)
+	
+	gui.F_Dash.GSGC_Parts.AddStyleFormatCondition("GV_PARTS","COUNT_QTY","BALANCE","EXPRESSION","[COUNT_QTY] = [GSS_QTY]")
+	gui.F_Dash.GSGC_Parts.SetStyleFormatConditionProperty("GV_PARTS","COUNT_QTY","BALANCE","BACKCOLOR",V.Enum.ThemeColors!ColorGreen.Highlight)
+	GUI.F_Dash.GSGC_Parts.SetStyleFormatConditionProperty("GV_PARTS","COUNT_QTY","BALANCE","APPLYTOROW",True)
+	
+	gui.F_Dash.GSGC_Parts.MainView("GV_PARTS")
+	
+	gui.F_Dash.GSGC_Parts.BestFitColumns("GV_PARTS")
+	
+	F.Intrinsic.Control.CallSub(Deserialize)
+	
+	gui.F_Dash.GSGC_Parts.visible(true)
+	
+	F.Intrinsic.Control.CallSub(LoadItemMaster)
+	
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.load_count.End
+
+Program.Sub.LoadItemMaster.Start
+F.Intrinsic.Control.Try
+
+F.Intrinsic.Control.If(V.DataTable.dtItemMaster.Exists)
+	F.Data.DataTable.Close("dtItemMaster")
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!con.OpenCompanyConnection
+F.Data.DataTable.CreateFromSQL("dtItemMaster","con","select rtrim(PART) as PART, rtrim(LOCATION) as LOC, rtrim(LOT) as LOT, rtrim(BIN) as BIN, rtrim(HEAT) as HEAT, rtrim(SERIAL_NUMBER) as SERIAL, QUANTITY, UNIT_COST from V_ITEM_MASTER order by BIN, LOT, HEAT, SERIAL_NUMBER;",True)
+F.ODBC.Connection!con.Close
+
+F.Data.DataView.Create("dtItemMaster","dvPart")
+F.Data.DataView.SetFilter("dtItemMaster","dvPart","PART = '' and LOC = ''")
+
+Gui.F_Item.gsgcItem.AddGridviewFromDataView("gvItemMaster","dtItemMaster","dvPart")
+
+Gui.F_Item.gsgcItem.SetGridviewProperty("gvItemMaster","Editable",False)
+
+Gui.F_Item.gsgcItem.SetColumnProperty("gvItemMaster","PART","Caption","Part")
+Gui.F_Item.gsgcItem.SetColumnProperty("gvItemMaster","LOC","Caption","Location")
+Gui.F_Item.gsgcItem.SetColumnProperty("gvItemMaster","LOT","Caption","Lot")
+Gui.F_Item.gsgcItem.SetColumnProperty("gvItemMaster","BIN","Caption","Bin")
+Gui.F_Item.gsgcItem.SetColumnProperty("gvItemMaster","HEAT","Caption","Heat")
+Gui.F_Item.gsgcItem.SetColumnProperty("gvItemMaster","SERIAL","Caption","Serial Number")
+Gui.F_Item.gsgcItem.SetColumnProperty("gvItemMaster","QUANTITY","Caption","Qty")
+Gui.F_Item.gsgcItem.SetColumnProperty("gvItemMaster","UNIT_COST","Caption","Cost")
+
+Gui.F_Item.gsgcItem.MainView("gvItemMaster")
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.LoadItemMaster.End
+
+Program.Sub.F_Dash_SaveButtonClick.Start
+f.Intrinsic.Control.Try
+v.Local.sSQL.Declare
+V.Local.sDate.Declare
+V.Local.sCaption.Declare
+V.Local.sRet.Declare
+v.Local.iRet.Declare
+'update the counted quantity and counted date to the cycle count table
+
+F.Intrinsic.Control.If(V.DataTable.PARTS.Exists,=,False)
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.BlockEvents
+F.Data.DataView.Create("PARTS","dvApprove")
+F.Data.DataView.SetFilter("PARTS","dvApprove","[APPROVE]")
+F.Data.DataView.Create("PARTS","dvInvestigate")
+F.Data.DataView.SetFilter("PARTS","dvInvestigate","[INVESTIGATE]")
+F.Data.DataView.Create("PARTS","dvNoAction")
+F.Data.DataView.SetFilter("PARTS","dvNoAction","not([APPROVE]) and not([INVESTIGATE])")
+
+F.Intrinsic.Control.If(V.DataView.PARTS!dvNoAction.RowCount,>,0)
+	'Some records weren't selected
+	F.Intrinsic.UI.Msgbox("Some records were not selected to Approve or Investigate.","Exiting Update")
+	F.Data.DataView.Close("PARTS","dvApprove")
+	F.Data.DataView.Close("PARTS","dvInvestigate")
+	F.Data.DataView.Close("PARTS","dvNoAction")
+	F.Intrinsic.Control.UnBlockEvents
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.ElseIf(V.DataView.PARTS!dvInvestigate.RowCount,>,0)
+	'Some records were selected to be investigated
+	F.Intrinsic.UI.Msgbox("Some records were selected to be Investigated, if you continue, these records will start a new cycle count. Would you like to continue?","Update Inventory",V.Enum.MsgBoxStyle!YesNo,V.Local.iRet)
+	F.Intrinsic.Control.If(V.Local.iRet,=,V.Enum.MsgBoxResult!No)
+		F.Data.DataView.Close("PARTS","dvApprove")
+		F.Data.DataView.Close("PARTS","dvInvestigate")
+		F.Data.DataView.Close("PARTS","dvNoAction")
+		F.Intrinsic.Control.UnBlockEvents
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+f.ODBC.Connection!coredb.opencompanyconnection
+
+F.Intrinsic.String.Build("select 1 from GCG_6238_MAINT where RUN_ID = '{0}';",V.Global.sCountID.Trim,V.Local.sSQL)
+F.ODBC.Connection!coredb.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF.Not)
+	'run ID is still being counted
+	F.Intrinsic.UI.Msgbox("Run ID is still being counted from GS Mobile. Would you like to continue?","Update Inventory",V.Enum.MsgBoxStyle!YesNo,V.Local.iRet)
+	F.Intrinsic.Control.If(V.Local.iRet,=,V.Enum.MsgBoxResult!No)
+		F.Intrinsic.Control.UnBlockEvents
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.String.Build("update GCG_6238_MAINT set RUN_ID = '', STOP_TIME = '{1}' where RUN_ID = '{0}';",V.Global.sCountID.Trim,V.Ambient.Time.FormatHH:NN,V.Local.sSQL)
+	F.ODBC.Connection!con.Execute(V.Local.sSQL)
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.ToDataTable("PARTS","dvApprove","PARTSApprove",True)
+F.Data.DataView.ToDataTable("PARTS","dvInvestigate","PARTSInvestigate",True)
+
+F.Intrinsic.String.Build("delete from CYCLE_COUNT_BIN where RUNID = '{0}'",V.Global.sCountID,V.Local.sSQL)
+F.ODBC.Connection!coredb.Execute(V.Local.sSQL)
+
+f.Data.DataTable.SaveToDB("PARTSApprove","coredb","cycle_count_bin","RUNID*!*PART*!*LOC*!*BIN*!*LOT*!*HEAT*!*SERIAL",256,"RUNID@!@RUNID*!*PART@!@PART*!*LOC@!@LOC*!*DESCR@!@DESCR*!*LOT@!@LOT*!*HEAT@!@HEAT*!*SERIAL@!@SERIAL*!*BIN@!@BIN*!*UM@!@UM*!*PL@!@PL*!*ABC@!@ABC*!*GSS_QTY@!@ORIG_QTY*!*COUNT_QTY@!@ADJUST")
+
+'Write the cycle count info to history table
+F.Intrinsic.String.Build("select * from CYCLE_COUNT_BIN where RUNID = {0}",V.Global.sCountID,V.Local.sSQL)
+F.Data.DataTable.CreateFromSQL("CYCLE_COUNT_BIN_SAVE","coredb",V.Local.sSQL,True)
+F.Data.DataTable.SaveToDB("CYCLE_COUNT_BIN_SAVE","coredb","GCG_6238_BIN_HIST","RUNID*!*PART*!*LOC*!*LOT*!*BIN*!*HEAT*!*SERIAL",256)
+F.Intrinsic.String.Build("select "DATE" as DATE_HIST, cast("TIME" as DATETIME) as TIME_HIST, XUSER, RUN_ID from CYCLE_COUNT_XREF where RUN_ID = {0}",V.Global.sCountID,V.Local.sSQL)
+F.Data.DataTable.CreateFromSQL("CYCLE_COUNT_XREF_SAVE","coredb",V.Local.sSQL,True)
+F.Data.DataTable.SaveToDB("CYCLE_COUNT_XREF_SAVE","coredb","GCG_6238_XREF_HIST","RUN_ID",256)
+
+f.ODBC.Connection!coredb.Close
+
+'Before you go! we need to setup the Investigate flagged parts for a new count id
+F.Intrinsic.Control.If(V.DataTable.PARTSInvestigate.RowCount,>,0)
+	F.Intrinsic.Control.CallSub(NewCountIDForInvestigate)
+	F.Intrinsic.String.Build("SELECT DATE, TIME FROM CYCLE_COUNT_XREF where RUN_ID = '{0}';",V.Args.NewCountID,V.Local.sSQL)
+	F.ODBC.Connection!con.OpenCompanyConnection
+	F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+	F.ODBC.Connection!con.Close
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.Close("CYCLE_COUNT_BIN_SAVE")
+F.Data.DataTable.Close("CYCLE_COUNT_XREF_SAVE")
+
+f.Global.General.LaunchMenuTask(366,V.Local.iRet)
+
+F.Intrinsic.String.Split(V.Screen.F_Dash.Caption," - ",V.Local.sRet)
+F.Intrinsic.UI.Msgbox(V.Local.sRet(2),"Date/Time")
+
+F.Intrinsic.Control.If(V.DataTable.PARTSInvestigate.RowCount,>,0)
+	F.Intrinsic.String.Split(V.Local.sSQL,"*!*",V.Local.sSQL)
+	F.Intrinsic.String.Split(V.Local.sSQL(0)," ",V.Local.sDate)
+	F.Intrinsic.String.Split(V.Local.sSQL(1)," ",V.Local.sSQL)
+	F.Intrinsic.String.Build("Counting Dashboard - ID: {0} - Start: {1} {2}",V.Args.NewCountID,V.Local.sDate(0),V.Local.sSQL(1),V.Local.sCaption)
+	Gui.F_Dash..Caption(V.Local.sCaption)
+	F.ODBC.Connection!coredb.OpenCompanyConnection
+	F.Intrinsic.Control.CallSub(load_count,"COUNTID",V.Args.NewCountID)
+	F.ODBC.Connection!coredb.Close
+F.Intrinsic.Control.Else
+	V.Global.sCountID.Set("***NO COUNT***")
+	Gui.F_Dash..Caption("Counting Dashboard")
+	F.Intrinsic.Control.CallSub(F_Dash_RefreshClick)
+	F.Intrinsic.Control.If(V.Global.sCountID,=,"***NO COUNT***")
+		F.Intrinsic.Control.CallSub(F_Dash_UnLoad)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+f.Data.DataTable.Close("PARTSApprove")
+f.Data.DataTable.Close("PARTSInvestigate")
+
+F.Intrinsic.Control.UnBlockEvents
+
+f.Intrinsic.Control.catch
+F.Intrinsic.Control.UnBlockEvents
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.F_Dash_SaveButtonClick.End
+
+Program.Sub.NewCountIDForInvestigate.Start
+V.Local.sSQL.Declare
+V.Local.iRunID.Declare
+V.Local.iCnt.Declare
+V.Local.dDate.Declare
+V.Local.dTime.Declare
+f.Intrinsic.Control.Try
+
+F.Intrinsic.Control.BlockEvents
+F.Global.BI.GetRunID(V.Local.iRunID)
+
+'Add Record to XREF using date and time values with generated Run ID
+V.Local.dDate.Set(V.Ambient.Date)
+V.Local.dTime.Set(V.Ambient.Time)
+F.Intrinsic.String.Build("insert into CYCLE_COUNT_XREF (DATE, TIME, XUSER, RUN_ID) values ('{2}', '{3}', '{0}', {1});",V.DataTable.CYCLE_COUNT_XREF_SAVE(0).XUSER!FieldVal,V.Local.iRunID,V.Local.dDate.PervasiveDate,V.Local.dTime.FormatHH:NN:SS,V.Local.sSQL)
+F.ODBC.Connection!con.OpenCompanyConnection
+F.ODBC.Connection!con.Execute(V.Local.sSQL)
+F.Intrinsic.Control.For(V.Local.iCnt,0,V.DataTable.PARTSInvestigate.RowCount--,1)
+	'Get Item Master Records
+	F.Intrinsic.String.Build("select {0} as RUNID, A.PART, A.LOCATION as LOC, '' as DESCR, A.LOT, A.BIN, A.HEAT, A.SERIAL_NUMBER as SERIAL, B.UM_INVENTORY as UM, B.PRODUCT_LINE as PL, A.UNIT_COST as ORIG_COST, A.UNIT_COST as NEW_COST, A.QUANTITY as ORIG_QTY, cast(0 as Float) as ADJUST, cast(1 as Bit) as LOT_BIN from V_ITEM_MASTER A left join V_INVENTORY_MSTR B on A.PART = B.PART and A.LOCATION = B.LOCATION where A.PART = '{1}' and A.LOCATION = '{2}' and A.LOT = '{3}' and A.BIN = '{4}' and A.HEAT = '{5}' and A.SERIAL_NUMBER = '{6}' order by A.PART, A.LOCATION, A.BIN;",V.Local.iRunID.String,V.DataTable.PARTSInvestigate(V.Local.iCnt).PART!FieldVal,V.DataTable.PARTSInvestigate(V.Local.iCnt).LOC!FieldVal,V.DataTable.PARTSInvestigate(V.Local.iCnt).LOT!FieldVal,V.DataTable.PARTSInvestigate(V.Local.iCnt).BIN!FieldVal,V.DataTable.PARTSInvestigate(V.Local.iCnt).HEAT!FieldVal,V.DataTable.PARTSInvestigate(V.Local.iCnt).SERIAL!FieldVal,V.Local.sSQL)
+	F.Data.DataTable.CreateFromSQL("dtItemMasterCycleCount","con",V.Local.sSQL,False)
+	F.Intrinsic.Control.If(V.DataTable.dtItemMasterCycleCount.RowCount,>,0)
+		'Delete bin records from INV_PHYS_VAR
+		F.Intrinsic.String.Build("delete from INV_PHYS_VAR where PART = '{0}' and LOCATION = '{1}' and LOT = '{2}' and BIN = '{3}' and HEAT = '{4}' and SERIAL = '{5}';",V.DataTable.PARTSInvestigate(V.Local.iCnt).PART!FieldVal,V.DataTable.PARTSInvestigate(V.Local.iCnt).LOC!FieldVal,V.DataTable.PARTSInvestigate(V.Local.iCnt).LOT!FieldVal,V.DataTable.PARTSInvestigate(V.Local.iCnt).BIN!FieldVal,V.DataTable.PARTSInvestigate(V.Local.iCnt).HEAT!FieldVal,V.DataTable.PARTSInvestigate(V.Local.iCnt).SERIAL!FieldVal,V.Local.sSQL)
+		F.ODBC.Connection!con.Execute(V.Local.sSQL)
+		'add Item Master Records to the Cycle Count Tables
+		F.Data.DataTable.SaveToDB("dtItemMasterCycleCount","con","CYCLE_COUNT_BIN","",128)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.Build("Could not find Item Master record for these keys:{0}{0}Part: {1}{0}Location: {2}{0}Lot: {3}{0}Bin: {4}{0}Heat: {5}{0}Serial: {6}{0}{0}",V.Ambient.NewLine,V.DataTable.PARTSInvestigate(V.Local.iCnt).PART!FieldVal,V.DataTable.PARTSInvestigate(V.Local.iCnt).LOC!FieldVal,V.DataTable.PARTSInvestigate(V.Local.iCnt).LOT!FieldVal,V.DataTable.PARTSInvestigate(V.Local.iCnt).BIN!FieldVal,V.DataTable.PARTSInvestigate(V.Local.iCnt).HEAT!FieldVal,V.DataTable.PARTSInvestigate(V.Local.iCnt).SERIAL!FieldVal,V.Local.sSQL)
+		F.Intrinsic.UI.Msgbox(V.Local.sSQL,"Item Master Record Not Found")
+	F.Intrinsic.Control.EndIf
+	F.Data.DataTable.Close("dtItemMasterCycleCount")
+F.Intrinsic.Control.Next(V.Local.iCnt)
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Variable.AddRV("NewCountID",V.Local.iRunID.String)
+F.Intrinsic.String.Build("New Cycle Count ID {0} created! Loading into Dashboard after processing is finished.",V.Local.iRunID.String,V.Local.sSQL)
+F.Intrinsic.UI.Msgbox(V.Local.sSQL,"Success!")
+
+F.Intrinsic.Control.UnBlockEvents
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+F.Intrinsic.Control.UnBlockEvents
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.NewCountIDForInvestigate.End
+
+Program.Sub.gsgc_Parts_RowCellClick.Start
+f.Intrinsic.Control.Try
+v.Local.sError.Declare
+v.Local.sFilter.Declare
+v.Local.sPart.Declare
+v.Local.sLoc.Declare
+
+F.Intrinsic.Control.If(V.Args.Column.UCase,=,"SELECTED")
+	f.Data.DataTable.SetValue("PARTS",v.Args.rowindex,"SELECTED",V.DataTable.parts(V.Args.ROWINDEX).SELECTED!FIELDVALNOT)
+F.Intrinsic.Control.ElseIf(V.Args.Column.UCase,=,"APPROVE")
+	f.Data.DataTable.SetValue("PARTS",v.Args.rowindex,"APPROVE",V.DataTable.parts(V.Args.ROWINDEX).APPROVE!FIELDVALNOT,"INVESTIGATE",False)
+F.Intrinsic.Control.ElseIf(V.Args.Column.UCase,=,"INVESTIGATE")
+	f.Data.DataTable.SetValue("PARTS",v.Args.rowindex,"INVESTIGATE",V.DataTable.parts(V.Args.ROWINDEX).INVESTIGATE!FIELDVALNOT,"APPROVE",False)
+F.Intrinsic.Control.ElseIF(V.Args.Column.UCase,=,"PART")
+	Gui.F_Dash..Enabled(False)
+	F.Intrinsic.String.Build("[PART] = '{0}' and [LOC] = '{1}'",V.Args.CellValue,V.DataTable.parts(V.Args.RowIndex).LOC!FieldVal,V.Local.sFilter)
+	F.Data.DataView.SetFilter("dtItemMaster","dvPart",V.Local.sFilter)
+	Gui.F_Item.gsgcItem.BestFitColumns("gvItemMaster")
+	F.Intrinsic.Control.If(V.Global.bItemShow)
+		Gui.F_Item..Visible(True)
+	F.Intrinsic.Control.Else
+		Gui.F_Item..Show
+		V.Global.bItemShow.Set(True)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.gsgc_Parts_RowCellClick.End
+
+Program.Sub.gsgcCCPart_RowCellClick.Start
+f.Intrinsic.Control.Try
+
+F.Intrinsic.Control.If(V.Args.Column.UCase,=,"SELECT")
+	F.Intrinsic.Control.If(V.DataTable.dtSelectParts(V.Args.RowIndex).IN_USE!FieldValNot)
+		F.Data.DataTable.SetValue("dtSelectParts",V.Args.RowIndex,"SELECT",V.DataTable.dtSelectParts(V.Args.RowIndex).SELECT!FieldValNot)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.gsgcCCPart_RowCellClick.End
+
+Program.Sub.F_Item_UnLoad.Start
+F.Intrinsic.Control.Try
+
+Gui.F_Item..Visible(False)
+F.Data.DataView.SetFilter("dtItemMaster","dvPart","PART = '' and LOC = ''")
+
+Gui.F_Dash..Enabled(True)
+Gui.F_Dash..SetFocus
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.F_Item_UnLoad.End
+
+Program.Sub.ddlUsers_Change.Start
+V.Local.sSQL.Declare
+F.Intrinsic.Control.Try
+
+F.Intrinsic.Control.If(V.Screen.F_Part!ddlUsers.Text,=,"")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.String.Build("select 1 from GCG_6238_MAINT where RUN_ID <> '' and USER_ID = '{0}';",V.Screen.F_Part!ddlUsers.Text,V.Local.sSQL)
+F.ODBC.Connection!con.OpenCompanyConnection
+F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF.Not)
+	F.Intrinsic.UI.Msgbox("This user is already selected to count something.","GS Mobile User Selected")
+	Gui.F_Part.ddlUsers.ListIndex(-1)
+F.Intrinsic.Control.EndIf
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.ddlUsers_Change.End
+
+Program.Sub.F_Part_UnLoad.Start
+f.Intrinsic.Control.Try
+
+Gui.F_Part..Visible(False)
+F.Data.DataTable.Close("dtSelectParts")
+Gui.F_Dash..Enabled(True)
+Gui.F_Dash..SetFocus
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.F_Part_UnLoad.End
+
+Program.Sub.cmdNewCycleCount_Click.Start
+V.Local.sSQL.Declare
+V.Local.iRunID.Declare
+V.Local.iCnt.Declare
+V.Local.dDate.Declare
+V.Local.dTime.Declare
+f.Intrinsic.Control.Try
+
+F.Intrinsic.Control.If(V.Screen.F_Part!ddlUsers.Text,=,"")
+	F.Intrinsic.UI.Msgbox("Please select a GS Mobile User.","Exiting Cycle Count Creation")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.Create("dtSelectParts","dvSelect")
+F.Data.DataView.SetFilter("dtSelectParts","dvSelect","[SELECT]")
+
+F.Intrinsic.Control.If(V.DataView.dtSelectParts!dvSelect.RowCount,=,0)
+	F.Intrinsic.UI.Msgbox("No parts selected.","Exiting Cycle Count Creation")
+	F.Data.DataView.Close("dvSelect")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.BlockEvents
+
+F.Global.BI.GetRunID(V.Local.iRunID)
+
+V.Local.dDate.Set(V.Ambient.Date)
+V.Local.dTime.Set(V.Ambient.Time)
+F.Intrinsic.String.Build("insert into CYCLE_COUNT_XREF (DATE, TIME, XUSER, RUN_ID) values ('{2}', '{3}', '{0}', {1});",V.Screen.F_Part!ddlUsers.Text,V.Local.iRunID,V.Local.dDate.PervasiveDate,V.Local.dTime.FormatHH:NN:SS,V.Local.sSQL)
+F.ODBC.Connection!con.OpenCompanyConnection
+F.ODBC.Connection!con.Execute(V.Local.sSQL)
+
+F.Intrinsic.Control.For(V.Local.iCnt,0,V.DataView.dtSelectParts!dvSelect.RowCount--,1)
+	'loop through and setup each part to count their Item Master records
+	'Get Item Master Records
+	F.Intrinsic.String.Build("select {0} as RUNID, A.PART, A.LOCATION as LOC, '' as DESCR, A.LOT, A.BIN, A.HEAT, A.SERIAL_NUMBER as SERIAL, B.UM_INVENTORY as UM, B.PRODUCT_LINE as PL, A.UNIT_COST as ORIG_COST, A.UNIT_COST as NEW_COST, A.QUANTITY as ORIG_QTY, cast(0 as Float) as ADJUST, cast(1 as Bit) as LOT_BIN from V_ITEM_MASTER A left join V_INVENTORY_MSTR B on A.PART = B.PART and A.LOCATION = B.LOCATION where A.PART = '{1}' and A.LOCATION = '{2}' order by A.PART, A.LOCATION, A.BIN;",V.Local.iRunID.String,V.DataView.dtSelectParts!dvSelect(V.Local.iCnt).PART!FieldVal,V.DataView.dtSelectParts!dvSelect(V.Local.iCnt).LOCATION!FieldVal,V.Local.sSQL)
+	F.Data.DataTable.CreateFromSQL("dtItemMasterCycleCount","con",V.Local.sSQL,False)
+	F.Intrinsic.Control.If(V.DataTable.dtItemMasterCycleCount.RowCount,>,0)
+		'Delete bin records from INV_PHYS_VAR
+		F.Intrinsic.String.Build("delete from INV_PHYS_VAR where PART = '{0}' and LOCATION = '{1}';",V.DataView.dtSelectParts!dvSelect(V.Local.iCnt).PART!FieldVal,V.DataView.dtSelectParts!dvSelect(V.Local.iCnt).LOCATION!FieldVal,V.Local.sSQL)
+		F.ODBC.Connection!con.Execute(V.Local.sSQL)
+		F.Intrinsic.String.Build("select 1 from GCG_6238_MAINT where PART = '{0}' and LOCATION = '{1}';",V.DataView.dtSelectParts!dvSelect(V.Local.iCnt).PART!FieldVal,V.DataView.dtSelectParts!dvSelect(V.Local.iCnt).LOCATION!FieldVal,V.Local.sSQL)
+		F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSQL,V.Local.sSQL)
+		F.Intrinsic.Control.If(V.Ambient.ExecuteAndReturnEOF)
+			'insert part into maintenance table
+			F.Intrinsic.String.Build("insert into GCG_6238_MAINT (DATE_LAST_COUNT, RUN_ID, USER_ID, START_TIME, STOP_TIME, PART, LOCATION, BIN, COUNT_FLAG) values ('{1}', '{2}', '{3}', '{4}', '', '{0}', '{5}', '', 'Y');",V.DataView.dtSelectParts!dvSelect(V.Local.iCnt).PART!FieldVal,V.Local.dDate.PervasiveDate,V.Local.iRunID,V.Screen.F_Part!ddlUsers.Text,V.Local.dTime.FormatHH:NN,V.DataView.dtSelectParts!dvSelect(V.Local.iCnt).LOCATION!FieldVal,V.Local.sSQL)
+		F.Intrinsic.Control.Else
+			'update maint table to setup bin for counting
+			F.Intrinsic.String.Build("update GCG_6238_MAINT set DATE_LAST_COUNT = '{1}', RUN_ID = '{2}', USER_ID = '{3}', START_TIME = '{4}', STOP_TIME = '' where PART = '{0}' and LOCATION = '{5}';",V.DataView.dtSelectParts!dvSelect(V.Local.iCnt).PART!FieldVal,V.Local.dDate.PervasiveDate,V.Local.iRunID,V.Screen.F_Part!ddlUsers.Text,V.Local.dTime.FormatHH:NN,V.DataView.dtSelectParts!dvSelect(V.Local.iCnt).LOCATION!FieldVal,V.Local.sSQL)
+		F.Intrinsic.Control.EndIf
+		F.ODBC.Connection!con.Execute(V.Local.sSQL)
+		'add Item Master Records to the Cycle Count Tables
+		F.Data.DataTable.SaveToDB("dtItemMasterCycleCount","con","CYCLE_COUNT_BIN","",128)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.Build("Could not find Item Master records for these keys:{0}{0}Part: {1}{0}Location: {2}{0}{0}This record will need to be readded to the Item Master and the count will need to be restarted manually from the dashboard.",V.Ambient.NewLine,V.DataView.dtSelectParts!dvSelect(V.Local.iCnt).PART!FieldVal,V.DataView.dtSelectParts!dvSelect(V.Local.iCnt).LOCATION!FieldVal,V.Local.sSQL)
+		F.Intrinsic.UI.Msgbox(V.Local.sSQL,"Item Master Record Not Found")
+	F.Intrinsic.Control.EndIf
+	F.Data.DataTable.Close("dtItemMasterCycleCount")
+F.Intrinsic.Control.Next(V.Local.iCnt)
+F.ODBC.Connection!con.Close
+
+F.Intrinsic.Control.UnBlockEvents
+
+F.Intrinsic.String.Build("New Cycle Count ID {0} created!",V.Local.iRunID.String,V.Local.sSQL)
+F.Intrinsic.UI.Msgbox(V.Local.sSQL,"Success!")
+
+F.Intrinsic.Control.CallSub(F_Part_UnLoad)
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdNewCycleCount_Click.End
+
+Program.Sub.CycleCountPart.Start
+f.Intrinsic.Control.Try
+
+Gui.F_Dash..Enabled(False)
+
+F.ODBC.Connection!con.OpenCompanyConnection
+F.Data.DataTable.CreateFromSQL("dtSelectParts","con","select cast(0 as BIT) as "SELECT", A.PART, A.LOCATION, if(isnull(B.RUN_ID, '') = '', cast(0 as BIT), cast(1 as BIT)) as IN_USE from V_INVENTORY_MSTR A left join GCG_6238_MAINT B on A.PART = B.PART and A.LOCATION = B.LOCATION where A.QTY_ONHAND > 0;",True)
+F.ODBC.Connection!con.Close
+
+Gui.F_Part.gsgcCCPart.AddGridviewFromDatatable("gvSelectParts","dtSelectParts")
+
+Gui.F_Part.gsgcCCPart.SetColumnProperty("gvSelectParts","IN_USE","Visible",False)
+Gui.F_Part.gsgcCCPart.SetColumnProperty("gvSelectParts","IN_USE","AllowShowHide",False)
+Gui.F_Part.gsgcCCPart.SetColumnProperty("gvSelectParts","SELECT","AllowShowHide",False)
+Gui.F_Part.gsgcCCPart.SetColumnProperty("gvSelectParts","PART","AllowShowHide",False)
+Gui.F_Part.gsgcCCPart.SetColumnProperty("gvSelectParts","LOCATION","AllowShowHide",False)
+
+Gui.F_Part.gsgcCCPart.SetColumnProperty("gvSelectParts","SELECT","AllowEdit",False)
+Gui.F_Part.gsgcCCPart.SetColumnProperty("gvSelectParts","PART","AllowEdit",False)
+Gui.F_Part.gsgcCCPart.SetColumnProperty("gvSelectParts","LOCATION","AllowEdit",False)
+
+Gui.F_Part.gsgcCCPart.SetColumnProperty("gvSelectParts","SELECT","ShowCaption",False)
+Gui.F_Part.gsgcCCPart.SetColumnProperty("gvSelectParts","PART","Caption","Part")
+Gui.F_Part.gsgcCCPart.SetColumnProperty("gvSelectParts","LOCATION","Caption","Location")
+
+Gui.F_Part.gsgcCCPart.SetColumnProperty("gvSelectParts","SELECT","MaxWidth",25)
+
+Gui.F_Part.gsgcCCPart.AddStyleFormatCondition("gvSelectParts","IN_USE","PartCounting","Expression","[IN_USE]")
+Gui.F_Part.gsgcCCPart.SetStyleFormatConditionProperty("gvSelectParts","IN_USE","PartCounting","BackColor",V.Enum.ThemeColors!ColorGray.Highlight)
+Gui.F_Part.gsgcCCPart.SetStyleFormatConditionProperty("gvSelectParts","IN_USE","PartCounting","ApplyToRow",True)
+
+Gui.F_Part.gsgcCCPart.MainView("gvSelectParts")
+
+Gui.F_Part.ddlUsers.ListIndex(-1)
+
+F.Intrinsic.Control.If(V.Global.bPartShow)
+	Gui.F_Part..Visible(True)
+F.Intrinsic.Control.Else
+	Gui.F_Part..Show
+	V.Global.bPartShow.Set(True)
+F.Intrinsic.Control.EndIf
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.CycleCountPart.End
+
+Program.Sub.Serialize.Start
+V.Local.Serialize.Declare
+
+'GridView - GV_PARTS
+Gui.F_Dash.gsgc_Parts.Serialize("GV_PARTS",V.Local.Serialize)
+F.Global.Registry.AddValue(V.Caller.User,V.Caller.CompanyCode,"GV_PARTS",6238,1000,False,"Serialize",False,0,-999.0,1/1/1980,12:00:00 AM,V.Local.Serialize)
+Program.Sub.Serialize.End
+
+Program.Sub.Deserialize.Start
+V.Local.Serialize.Declare
+
+'GridView - GV_PART
+F.Global.Registry.ReadValue(V.Caller.User,V.Caller.CompanyCode,"GV_PART",6238,1000,6,"",V.Local.Serialize)
+F.Intrinsic.Control.If(V.Local.Serialize.Trim,<>,"")
+	Gui.F_Dash.gsgc_Parts.Deserialize(V.Local.Serialize)
+F.Intrinsic.Control.EndIf
+Program.Sub.Deserialize.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$bbaker$}$20211015094456868$}$pM7xsHplA2E9VCTenDTJ47gi1rF/t66WVFP8/BEFV0B3iod8uRC0ApQVzDYUN1DoqWonhLCwE1M=
+Program.Sub.Comments.End
